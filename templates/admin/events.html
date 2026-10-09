@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Management | EventSync</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/eventsync.css') }}">
+
+    <style>
+        .page-wrap {
+            min-height: 100vh;
+            display: flex;
+            background: #f5f7fb;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #111827;
+            color: #fff;
+            padding: 24px 16px;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 28px;
+            padding: 0 12px;
+        }
+
+        .nav-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #9ca3af;
+            margin: 20px 12px 8px;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 11px 12px;
+            border-radius: 9px;
+            color: #d1d5db;
+            text-decoration: none;
+            margin-bottom: 4px;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #1f2937;
+            color: #fff;
+        }
+
+        .main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 18px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #111827;
+        }
+
+        .topbar p {
+            margin: 5px 0 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 28px;
+        }
+
+        .alert {
+            padding: 13px 16px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .alert-error,
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .section-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            margin-bottom: 22px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #111827;
+        }
+
+        .section-body {
+            padding: 20px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 7px;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 11px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: #fff;
+            color: #111827;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 9px 13px;
+            border-radius: 8px;
+            text-decoration: none;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 650;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #f9fafb;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            border-color: #dc2626;
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-success {
+            background: #16a34a;
+            border-color: #16a34a;
+            color: #fff;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 13px 14px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        th {
+            background: #f9fafb;
+            color: #374151;
+            font-weight: 700;
+        }
+
+        td {
+            color: #4b5563;
+        }
+
+        .event-name {
+            color: #111827;
+            font-weight: 750;
+        }
+
+        .event-type {
+            color: #6b7280;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        .badge {
+            display: inline-flex;
+            padding: 5px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .badge-live {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-upcoming {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-cancelled {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .badge-draft {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 7px;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px 15px;
+            color: #6b7280;
+        }
+
+        .summary {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        @media (max-width: 950px) {
+            .filter-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .page-wrap {
+                display: block;
+            }
+
+            .sidebar {
+                width: auto;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .topbar {
+                padding: 16px;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page-wrap">
+
+    <aside class="sidebar">
+
+        <div class="brand">EventSync</div>
+
+        <div class="nav-title">Administration</div>
+
+        <a href="{{ url_for('admin.dashboard') }}"
+           class="nav-link">
+            Dashboard
+        </a>
+
+        <a href="{{ url_for('admin.users') }}"
+           class="nav-link">
+            Users
+        </a>
+
+        <a href="{{ url_for('admin.departments') }}"
+           class="nav-link">
+            Departments
+        </a>
+
+        <a href="{{ url_for('admin.subjects') }}"
+           class="nav-link">
+            Subjects
+        </a>
+
+        <a href="{{ url_for('admin.lectures') }}"
+           class="nav-link">
+            Lectures / Timetable
+        </a>
+
+        <a href="{{ url_for('admin.events') }}"
+           class="nav-link active">
+            Events
+        </a>
+
+        <a href="{{ url_for('admin.reports') }}"
+           class="nav-link">
+            Reports
+        </a>
+
+        <div class="nav-title">Account</div>
+
+        <a href="{{ url_for('auth.logout') }}"
+           class="nav-link">
+            Logout
+        </a>
+
+    </aside>
+
+    <main class="main">
+
+        <header class="topbar">
+
+            <div>
+                <h1>Event Management</h1>
+                <p>
+                    Create, update, coordinate and monitor college events.
+                </p>
+            </div>
+
+            <a href="{{ url_for('admin.create_event') }}"
+               class="btn btn-primary">
+                + Create Event
+            </a>
+
+        </header>
+
+        <section class="content">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="section-card">
+
+                <div class="section-header">
+
+                    <div>
+                        <h2>Event Filters</h2>
+
+                        <div class="summary">
+                            Search events by name, category or status.
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="section-body">
+
+                    <form method="GET"
+                          action="{{ url_for('admin.events') }}">
+
+                        <div class="filter-grid">
+
+                            <div class="field">
+                                <label for="search">
+                                    Search
+                                </label>
+
+                                <input type="text"
+                                       id="search"
+                                       name="search"
+                                       value="{{ request.args.get('search', '') }}"
+                                       placeholder="Event name, category or venue">
+                            </div>
+
+                            <div class="field">
+                                <label for="category">
+                                    Category
+                                </label>
+
+                                <select name="category"
+                                        id="category">
+
+                                    <option value="">
+                                        All Categories
+                                    </option>
+
+                                    {% for category in [
+                                        'Technical',
+                                        'Sports',
+                                        'Cultural',
+                                        'Placement & Career',
+                                        'Competitions',
+                                        'Research & Innovation',
+                                        'College Fest',
+                                        'Other'
+                                    ] %}
+
+                                        <option value="{{ category }}"
+                                            {% if request.args.get('category') == category %}
+                                                selected
+                                            {% endif %}>
+                                            {{ category }}
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+                            </div>
+
+                            <div class="field">
+                                <label for="status">
+                                    Status
+                                </label>
+
+                                <select name="status"
+                                        id="status">
+
+                                    <option value="">
+                                        All Statuses
+                                    </option>
+
+                                    <option value="draft"
+                                        {% if request.args.get('status') == 'draft' %}
+                                            selected
+                                        {% endif %}>
+                                        Draft
+                                    </option>
+
+                                    <option value="upcoming"
+                                        {% if request.args.get('status') == 'upcoming' %}
+                                            selected
+                                        {% endif %}>
+                                        Upcoming
+                                    </option>
+
+                                    <option value="live"
+                                        {% if request.args.get('status') == 'live' %}
+                                            selected
+                                        {% endif %}>
+                                        Live
+                                    </option>
+
+                                    <option value="completed"
+                                        {% if request.args.get('status') == 'completed' %}
+                                            selected
+                                        {% endif %}>
+                                        Completed
+                                    </option>
+
+                                    <option value="cancelled"
+                                        {% if request.args.get('status') == 'cancelled' %}
+                                            selected
+                                        {% endif %}>
+                                        Cancelled
+                                    </option>
+
+                                </select>
+                            </div>
+
+                            <div>
+                                <button type="submit"
+                                        class="btn btn-primary">
+                                    Filter
+                                </button>
+                            </div>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+            <div class="section-card">
+
+                <div class="section-header">
+
+                    <div>
+                        <h2>Events</h2>
+
+                        <div class="summary">
+                            {{ events|length if events else 0 }}
+                            event(s) shown
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="section-body">
+
+                    {% if events %}
+
+                        <div class="table-wrap">
+
+                            <table>
+
+                                <thead>
+                                    <tr>
+                                        <th>Event</th>
+                                        <th>Category</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Venue</th>
+                                        <th>Coordinator</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    {% for event in events %}
+
+                                        <tr>
+
+                                            <td>
+
+                                                <div class="event-name">
+                                                    {{ event.event_name }}
+                                                </div>
+
+                                                <div class="event-type">
+                                                    {{ event.event_type or 'Event' }}
+                                                </div>
+
+                                            </td>
+
+                                            <td>
+                                                {{ event.event_category or 'Other' }}
+                                            </td>
+
+                                            <td>
+                                                {{ event.event_date }}
+                                            </td>
+
+                                            <td>
+                                                {{ event.start_time }}
+                                                –
+                                                {{ event.end_time }}
+                                            </td>
+
+                                            <td>
+                                                {{ event.venue or 'TBA' }}
+                                            </td>
+
+                                            <td>
+                                                {{ event.coordinator_names
+                                                   or event.coordinator_name
+                                                   or 'Not assigned' }}
+                                            </td>
+
+                                            <td>
+
+                                                {% if event.status == 'live' %}
+
+                                                    <span class="badge badge-live">
+                                                        LIVE
+                                                    </span>
+
+                                                {% elif event.status == 'upcoming' %}
+
+                                                    <span class="badge badge-upcoming">
+                                                        UPCOMING
+                                                    </span>
+
+                                                {% elif event.status == 'completed' %}
+
+                                                    <span class="badge badge-completed">
+                                                        COMPLETED
+                                                    </span>
+
+                                                {% elif event.status == 'cancelled' %}
+
+                                                    <span class="badge badge-cancelled">
+                                                        CANCELLED
+                                                    </span>
+
+                                                {% else %}
+
+                                                    <span class="badge badge-draft">
+                                                        {{ event.status|upper }}
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </td>
+
+                                            <td>
+
+                                                <div class="actions">
+
+                                                    <a href="{{ url_for('admin.event_details', event_id=event.id) }}"
+                                                       class="btn">
+                                                        Details
+                                                    </a>
+
+                                                    <a href="{{ url_for('event.admin_edit_event', event_id=event.id) }}"
+                                                       class="btn">
+                                                        Edit
+                                                    </a>
+
+                                                    <a href="{{ url_for('admin.add_event_coordinator', event_id=event.id) }}"
+                                                       class="btn">
+                                                        Coordinators
+                                                    </a>
+
+                                                    <a href="{{ url_for('admin.map_event_to_lecture', event_id=event.id) }}"
+                                                       class="btn">
+                                                        Map Lecture
+                                                    </a>
+
+                                                </div>
+
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="empty">
+
+                            <h3>No events found</h3>
+
+                            <p>
+                                Create your first event or change the filters.
+                            </p>
+
+                            <a href="{{ url_for('admin.create_event') }}"
+                               class="btn btn-primary"
+                               style="margin-top:10px;">
+                                Create Event
+                            </a>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Browse Events | EventSync</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/eventsync.css') }}"
+    >
+</head>
+
+<body>
+
+<div class="app-shell">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-brand">
+            <div class="brand-mark">ES</div>
+
+            <div>
+                <strong>EventSync</strong>
+                <span>Student Portal</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <a
+                href="{{ url_for('student.dashboard') }}"
+                class="nav-link"
+            >
+                <span>⌂</span>
+                <span>Dashboard</span>
+            </a>
+
+            <a
+                href="{{ url_for('student.events') }}"
+                class="nav-link active"
+            >
+                <span>◈</span>
+                <span>Browse Events</span>
+            </a>
+
+            <a
+                href="{{ url_for('student.my_events') }}"
+                class="nav-link"
+            >
+                <span>✓</span>
+                <span>My Events</span>
+            </a>
+
+            <a
+                href="{{ url_for('student.verification_history') }}"
+                class="nav-link"
+            >
+                <span>▣</span>
+                <span>Verification History</span>
+            </a>
+
+            {% if coordinator_event_count|default(0) > 0 %}
+                <a
+                    href="{{ url_for('student.coordinator') }}"
+                    class="nav-link"
+                >
+                    <span>★</span>
+                    <span>Coordinator Workspace</span>
+                </a>
+            {% endif %}
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <a
+                href="{{ url_for('student.profile') }}"
+                class="nav-link"
+            >
+                <span>◎</span>
+                <span>My Profile</span>
+            </a>
+
+            <a
+                href="{{ url_for('auth.logout') }}"
+                class="nav-link logout-link"
+            >
+                <span>↪</span>
+                <span>Logout</span>
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- Main -->
+    <main class="main-content">
+
+        <!-- Topbar -->
+        <header class="topbar">
+
+            <button
+                type="button"
+                class="mobile-menu-btn"
+                id="mobileMenuButton"
+                aria-label="Open menu"
+            >
+                ☰
+            </button>
+
+            <div class="topbar-title">
+
+                <p class="eyebrow">STUDENT PORTAL</p>
+
+                <h1>Browse Events</h1>
+
+            </div>
+
+            <div class="topbar-actions">
+
+                <a
+                    href="{{ url_for('student.notifications') }}"
+                    class="icon-button"
+                    title="Notifications"
+                >
+                    🔔
+
+                    {% if unread_notification_count|default(0) > 0 %}
+                        <span class="notification-dot">
+                            {{ unread_notification_count }}
+                        </span>
+                    {% endif %}
+                </a>
+
+                <div class="user-chip">
+
+                    <div class="avatar">
+                        {{ (user.name if user else "S")[:1]|upper }}
+                    </div>
+
+                    <div class="user-chip-info">
+
+                        <strong>
+                            {{ user.name if user else "Student" }}
+                        </strong>
+
+                        <span>
+                            {{ user.roll_no if user and user.roll_no else "Student" }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                <div class="flash-stack page-flashes">
+
+                    {% for category, message in messages %}
+
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+        {% endwith %}
+
+
+        <!-- Page Intro -->
+        <section class="page-intro">
+
+            <div>
+
+                <p class="eyebrow">COLLEGE ACTIVITIES</p>
+
+                <h2>Discover Events</h2>
+
+                <p>
+                    Explore technical, cultural, sports, placement,
+                    research and competition events happening across campus.
+                </p>
+
+            </div>
+
+            <a
+                href="{{ url_for('student.my_events') }}"
+                class="btn btn-secondary"
+            >
+                My Events →
+            </a>
+
+        </section>
+
+
+        <!-- Search / Filters -->
+        <section class="filter-card">
+
+            <form
+                method="GET"
+                action="{{ url_for('student.events') }}"
+                class="filter-form"
+            >
+
+                <div class="form-group filter-search">
+
+                    <label for="search">Search Events</label>
+
+                    <input
+                        type="search"
+                        id="search"
+                        name="search"
+                        value="{{ request.args.get('search', '') }}"
+                        placeholder="Search by event name, venue or category..."
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="category">Category</label>
+
+                    <select id="category" name="category">
+
+                        <option value="">
+                            All Categories
+                        </option>
+
+                        <option
+                            value="Technical"
+                            {% if request.args.get('category') == 'Technical' %}
+                                selected
+                            {% endif %}
+                        >
+                            Technical
+                        </option>
+
+                        <option
+                            value="Sports"
+                            {% if request.args.get('category') == 'Sports' %}
+                                selected
+                            {% endif %}
+                        >
+                            Sports
+                        </option>
+
+                        <option
+                            value="Cultural"
+                            {% if request.args.get('category') == 'Cultural' %}
+                                selected
+                            {% endif %}
+                        >
+                            Cultural
+                        </option>
+
+                        <option
+                            value="Placement & Career"
+                            {% if request.args.get('category') == 'Placement & Career' %}
+                                selected
+                            {% endif %}
+                        >
+                            Placement & Career
+                        </option>
+
+                        <option
+                            value="Competitions"
+                            {% if request.args.get('category') == 'Competitions' %}
+                                selected
+                            {% endif %}
+                        >
+                            Competitions
+                        </option>
+
+                        <option
+                            value="Research & Innovation"
+                            {% if request.args.get('category') == 'Research & Innovation' %}
+                                selected
+                            {% endif %}
+                        >
+                            Research & Innovation
+                        </option>
+
+                        <option
+                            value="College Fest"
+                            {% if request.args.get('category') == 'College Fest' %}
+                                selected
+                            {% endif %}
+                        >
+                            College Fest
+                        </option>
+
+                        <option
+                            value="Other"
+                            {% if request.args.get('category') == 'Other' %}
+                                selected
+                            {% endif %}
+                        >
+                            Other
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="status">Status</label>
+
+                    <select id="status" name="status">
+
+                        <option value="">
+                            All Statuses
+                        </option>
+
+                        <option
+                            value="upcoming"
+                            {% if request.args.get('status') == 'upcoming' %}
+                                selected
+                            {% endif %}
+                        >
+                            Upcoming
+                        </option>
+
+                        <option
+                            value="live"
+                            {% if request.args.get('status') == 'live' %}
+                                selected
+                            {% endif %}
+                        >
+                            Live Now
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Search
+                </button>
+
+                <a
+                    href="{{ url_for('student.events') }}"
+                    class="btn btn-secondary"
+                >
+                    Clear
+                </a>
+
+            </form>
+
+        </section>
+
+
+        <!-- Live Events -->
+        {% if live_events %}
+
+            <section class="event-section">
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <p class="eyebrow">HAPPENING NOW</p>
+
+                        <h3>Live Events</h3>
+
+                    </div>
+
+                    <span class="status-badge status-live">
+                        {{ live_events|length }} Live
+                    </span>
+
+                </div>
+
+
+                <div class="event-card-grid">
+
+                    {% for event in live_events %}
+
+                        <article class="event-card live-event-card">
+
+                            <div class="event-card-top">
+
+                                <span class="status-badge status-live">
+                                    ● LIVE NOW
+                                </span>
+
+                                <span class="status-badge">
+                                    {{ event.event_category }}
+                                </span>
+
+                            </div>
+
+
+                            <h3>
+                                {{ event.event_name }}
+                            </h3>
+
+
+                            <p class="event-card-description">
+
+                                {{ event.description|default(
+                                    "Join this active EventSync event.",
+                                    true
+                                )|truncate(120) }}
+
+                            </p>
+
+
+                            <div class="event-meta">
+
+                                <span>
+                                    📅 {{ event.event_date }}
+                                </span>
+
+                                <span>
+                                    🕐 {{ event.start_time }}
+                                    -
+                                    {{ event.end_time }}
+                                </span>
+
+                                <span>
+                                    📍 {{ event.venue }}
+                                </span>
+
+                            </div>
+
+
+                            <div class="event-card-footer">
+
+                                <a
+                                    href="{{ url_for(
+                                        'event.event_details',
+                                        event_id=event.id
+                                    ) }}"
+                                    class="btn btn-primary btn-small"
+                                >
+                                    Open Event
+                                </a>
+
+                            </div>
+
+                        </article>
+
+                    {% endfor %}
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
+
+        <!-- Upcoming Events -->
+        <section class="event-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <p class="eyebrow">UPCOMING</p>
+
+                    <h3>Upcoming Events</h3>
+
+                </div>
+
+                <span class="muted-text">
+                    {{ upcoming_events|length if upcoming_events else 0 }}
+                    events
+                </span>
+
+            </div>
+
+
+            {% if upcoming_events %}
+
+                <div class="event-card-grid">
+
+                    {% for event in upcoming_events %}
+
+                        <article class="event-card">
+
+                            <div class="event-card-top">
+
+                                <span class="status-badge">
+                                    {{ event.event_category|default("Event") }}
+                                </span>
+
+                                {% if event.status %}
+                                    <span
+                                        class="status-badge
+                                        status-{{ event.status }}"
+                                    >
+                                        {{ event.status|replace('_', ' ')|title }}
+                                    </span>
+                                {% endif %}
+
+                            </div>
+
+
+                            <h3>
+                                {{ event.event_name }}
+                            </h3>
+
+
+                            <p class="event-card-description">
+
+                                {{ event.description|default(
+                                    "College event powered by EventSync.",
+                                    true
+                                )|truncate(130) }}
+
+                            </p>
+
+
+                            <div class="event-meta">
+
+                                <span>
+                                    📅 {{ event.event_date }}
+                                </span>
+
+                                <span>
+                                    🕐 {{ event.start_time }}
+                                    -
+                                    {{ event.end_time }}
+                                </span>
+
+                                <span>
+                                    📍 {{ event.venue|default("Venue TBA") }}
+                                </span>
+
+                            </div>
+
+
+                            <div class="event-card-footer">
+
+                                <a
+                                    href="{{ url_for(
+                                        'event.event_details',
+                                        event_id=event.id
+                                    ) }}"
+                                    class="btn btn-primary btn-small"
+                                >
+                                    View Details
+                                </a>
+
+                            </div>
+
+                        </article>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="empty-state">
+
+                    <div class="empty-state-icon">
+                        ◈
+                    </div>
+
+                    <h3>No events found</h3>
+
+                    <p>
+                        Try changing your search or filters.
+                    </p>
+
+                    <a
+                        href="{{ url_for('student.events') }}"
+                        class="btn btn-secondary"
+                    >
+                        Show All Events
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- How Verification Works -->
+        <section class="verification-info-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <p class="eyebrow">EVENTSYNC VERIFICATION</p>
+
+                    <h3>How event verification works</h3>
+
+                </div>
+
+            </div>
+
+
+            <div class="workflow-grid">
+
+                <div class="workflow-card">
+
+                    <span class="workflow-number">01</span>
+
+                    <div class="workflow-icon">✓</div>
+
+                    <h4>Register</h4>
+
+                    <p>
+                        Register for the event as a participant or
+                        student coordinator.
+                    </p>
+
+                </div>
+
+
+                <div class="workflow-card">
+
+                    <span class="workflow-number">02</span>
+
+                    <div class="workflow-icon">▣</div>
+
+                    <h4>Scan QR</h4>
+
+                    <p>
+                        Scan the coordinator's short-lived dynamic QR code
+                        during the active event.
+                    </p>
+
+                </div>
+
+
+                <div class="workflow-card">
+
+                    <span class="workflow-number">03</span>
+
+                    <div class="workflow-icon">◎</div>
+
+                    <h4>Face Check</h4>
+
+                    <p>
+                        Complete live face verification against your
+                        registered face image.
+                    </p>
+
+                </div>
+
+
+                <div class="workflow-card">
+
+                    <span class="workflow-number">04</span>
+
+                    <div class="workflow-icon">★</div>
+
+                    <h4>Verified</h4>
+
+                    <p>
+                        Your event presence is recorded and the relevant
+                        coordinator receives a notification.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script src="{{ url_for('static', filename='js/eventsync.js') }}"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const menuButton =
+            document.getElementById("mobileMenuButton");
+
+        const sidebar =
+            document.getElementById("sidebar");
+
+        if (menuButton && sidebar) {
+
+            menuButton.addEventListener(
+                "click",
+                function () {
+                    sidebar.classList.toggle("sidebar-open");
+                }
+            );
+
+        }
+
+    });
+</script>
+
+</body>
+</html>

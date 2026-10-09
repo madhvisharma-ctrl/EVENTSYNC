@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Coordination | EventSync</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/eventsync.css') }}">
+
+    <style>
+        .page-wrap {
+            min-height: 100vh;
+            display: flex;
+            background: #f5f7fb;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #111827;
+            color: #fff;
+            padding: 24px 16px;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 28px;
+            padding: 0 12px;
+        }
+
+        .nav-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #9ca3af;
+            margin: 20px 12px 8px;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 11px 12px;
+            border-radius: 9px;
+            color: #d1d5db;
+            text-decoration: none;
+            margin-bottom: 4px;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #1f2937;
+            color: #fff;
+        }
+
+        .main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 18px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #111827;
+        }
+
+        .topbar p {
+            margin: 5px 0 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 28px;
+        }
+
+        .alert {
+            padding: 13px 16px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .alert-error,
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .section-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            margin-bottom: 22px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #111827;
+        }
+
+        .section-body {
+            padding: 20px;
+        }
+
+        .event-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .event-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 18px;
+        }
+
+        .event-title {
+            font-size: 18px;
+            font-weight: 750;
+            color: #111827;
+            margin-bottom: 7px;
+        }
+
+        .event-meta {
+            color: #6b7280;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 10px;
+        }
+
+        .badge-live {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-upcoming {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-draft {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+            margin-top: 16px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 9px 13px;
+            border-radius: 8px;
+            text-decoration: none;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 650;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #f9fafb;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-success {
+            background: #16a34a;
+            border-color: #16a34a;
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            border-color: #dc2626;
+            color: #fff;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 13px 14px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        th {
+            background: #f9fafb;
+            color: #374151;
+            font-weight: 700;
+        }
+
+        td {
+            color: #4b5563;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 35px 15px;
+            color: #6b7280;
+        }
+
+        .workflow {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .workflow-step {
+            padding: 16px;
+            border-radius: 11px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+        }
+
+        .workflow-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #2563eb;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .workflow-step strong {
+            display: block;
+            color: #111827;
+            margin-bottom: 5px;
+        }
+
+        .workflow-step span {
+            color: #6b7280;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 1000px) {
+            .stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .event-grid,
+            .workflow {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .page-wrap {
+                display: block;
+            }
+
+            .sidebar {
+                width: auto;
+            }
+
+            .topbar {
+                padding: 16px;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page-wrap">
+
+    <aside class="sidebar">
+        <div class="brand">EventSync</div>
+
+        <div class="nav-title">Teacher</div>
+
+        <a href="{{ url_for('teacher.dashboard') }}" class="nav-link">
+            Dashboard
+        </a>
+
+        <a href="{{ url_for('teacher.attendance') }}" class="nav-link">
+            Academic Attendance
+        </a>
+
+        <a href="{{ url_for('teacher.verified_students') }}" class="nav-link">
+            Verified Students
+        </a>
+
+        <a href="{{ url_for('teacher.notifications') }}" class="nav-link">
+            Notifications
+        </a>
+
+        <a href="{{ url_for('teacher.coordinator') }}" class="nav-link active">
+            Event Coordination
+        </a>
+
+        <div class="nav-title">Account</div>
+
+        <a href="{{ url_for('auth.logout') }}" class="nav-link">
+            Logout
+        </a>
+    </aside>
+
+    <main class="main">
+
+        <header class="topbar">
+            <div>
+                <h1>Event Coordination</h1>
+                <p>Manage events assigned to you as main coordinator.</p>
+            </div>
+        </header>
+
+        <section class="content">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="stats">
+
+                <div class="stat-card">
+                    <div class="stat-label">Assigned Events</div>
+                    <div class="stat-value">
+                        {{ events|length if events else 0 }}
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Live Events</div>
+                    <div class="stat-value">
+                        {{
+                            events
+                            |selectattr('status', 'equalto', 'live')
+                            |list
+                            |length
+                            if events else 0
+                        }}
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Upcoming Events</div>
+                    <div class="stat-value">
+                        {{
+                            events
+                            |selectattr('status', 'equalto', 'upcoming')
+                            |list
+                            |length
+                            if events else 0
+                        }}
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Verification System</div>
+                    <div class="stat-value">Active</div>
+                </div>
+
+            </div>
+
+            <div class="section-card">
+
+                <div class="section-header">
+                    <h2>Assigned Events</h2>
+                </div>
+
+                <div class="section-body">
+
+                    {% if events %}
+
+                        <div class="event-grid">
+
+                            {% for event in events %}
+
+                                <article class="event-card">
+
+                                    <div class="event-title">
+                                        {{ event.event_name }}
+                                    </div>
+
+                                    <div class="event-meta">
+                                        <strong>Category:</strong>
+                                        {{ event.event_category or 'Other' }}
+                                        <br>
+
+                                        <strong>Type:</strong>
+                                        {{ event.event_type or 'Event' }}
+                                        <br>
+
+                                        <strong>Date:</strong>
+                                        {{ event.event_date }}
+                                        <br>
+
+                                        <strong>Time:</strong>
+                                        {{ event.start_time }}
+                                        – {{ event.end_time }}
+                                        <br>
+
+                                        <strong>Venue:</strong>
+                                        {{ event.venue or 'TBA' }}
+                                    </div>
+
+                                    {% if event.status == 'live' %}
+                                        <span class="badge badge-live">
+                                            LIVE
+                                        </span>
+                                    {% elif event.status == 'upcoming' %}
+                                        <span class="badge badge-upcoming">
+                                            UPCOMING
+                                        </span>
+                                    {% elif event.status == 'completed' %}
+                                        <span class="badge badge-completed">
+                                            COMPLETED
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-draft">
+                                            {{ event.status|upper }}
+                                        </span>
+                                    {% endif %}
+
+                                    <div class="actions">
+
+                                        <a href="{{ url_for('event.event_details', event_id=event.id) }}"
+                                           class="btn btn-primary">
+                                            Event Details
+                                        </a>
+
+                                        <a href="{{ url_for('event.event_details', event_id=event.id) }}"
+                                           class="btn">
+                                            Manage Event
+                                        </a>
+
+                                        <a href="{{ url_for('teacher.event_registrations', event_id=event.id) }}"
+                                           class="btn">
+                                            Registrations
+                                        </a>
+
+                                    </div>
+
+                                </article>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="empty">
+                            <h3>No events assigned</h3>
+                            <p>
+                                You are currently not assigned as a main event
+                                coordinator.
+                            </p>
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <div class="section-card">
+
+                <div class="section-header">
+                    <h2>Event Verification Workflow</h2>
+                </div>
+
+                <div class="section-body">
+
+                    <div class="workflow">
+
+                        <div class="workflow-step">
+                            <div class="workflow-number">1</div>
+                            <strong>Student Registers</strong>
+                            <span>
+                                Student registers for your event as a
+                                participant or student coordinator.
+                            </span>
+                        </div>
+
+                        <div class="workflow-step">
+                            <div class="workflow-number">2</div>
+                            <strong>Dynamic QR</strong>
+                            <span>
+                                Generate a short-lived QR token while the
+                                event is active.
+                            </span>
+                        </div>
+
+                        <div class="workflow-step">
+                            <div class="workflow-number">3</div>
+                            <strong>Face Verification</strong>
+                            <span>
+                                Student completes live camera-based face
+                                verification.
+                            </span>
+                        </div>
+
+                        <div class="workflow-step">
+                            <div class="workflow-number">4</div>
+                            <strong>Teacher Notification</strong>
+                            <span>
+                                Relevant teachers receive verification
+                                notifications for their students.
+                            </span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="section-card">
+
+                <div class="section-header">
+                    <h2>Important</h2>
+                </div>
+
+                <div class="section-body">
+
+                    <p style="margin:0; color:#4b5563; line-height:1.7;">
+                        Event verification and academic lecture attendance
+                        are separate systems. A successful event verification
+                        confirms the student's presence at the event, but it
+                        does <strong>not</strong> automatically mark the
+                        student's academic lecture attendance.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+</body>
+</html>

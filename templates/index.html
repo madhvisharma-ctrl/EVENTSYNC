@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>EventSync | Smart College Event & Attendance System</title>
+
+    <meta
+        name="description"
+        content="EventSync connects college events, student registration, QR verification, face verification, event coordination and academic attendance."
+    >
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/eventsync.css') }}"
+    >
+</head>
+
+<body>
+
+    <!-- =========================================================
+         NAVBAR
+    ========================================================== -->
+
+    <header class="landing-navbar">
+        <div class="landing-container navbar-inner">
+
+            <a href="/" class="brand-logo">
+                <span class="brand-mark">E</span>
+                <span>
+                    <strong>EventSync</strong>
+                    <small>College Event Platform</small>
+                </span>
+            </a>
+
+            <nav class="landing-nav">
+
+                <a href="/events/">Events</a>
+
+                {% if session.get("user_id") %}
+
+                    {% if session.get("user_role") == "student" %}
+                        <a href="/student/dashboard">Dashboard</a>
+                    {% elif session.get("user_role") == "teacher" %}
+                        <a href="/teacher/dashboard">Dashboard</a>
+                    {% elif session.get("user_role") == "admin" %}
+                        <a href="/admin/dashboard">Dashboard</a>
+                    {% endif %}
+
+                    <a href="/logout" class="nav-login">
+                        Logout
+                    </a>
+
+                {% else %}
+
+                    <a href="/login" class="nav-login">
+                        Login
+                    </a>
+
+                    <a href="/register" class="nav-register">
+                        Register
+                    </a>
+
+                {% endif %}
+
+            </nav>
+
+        </div>
+    </header>
+
+
+    <!-- =========================================================
+         HERO SECTION
+    ========================================================== -->
+
+    <main>
+
+        <section class="hero-section">
+
+            <div class="landing-container hero-grid">
+
+                <div class="hero-content">
+
+                    <span class="hero-badge">
+                        Smart College Event & Attendance Platform
+                    </span>
+
+                    <h1>
+                        Connect
+                        <span>Students, Events</span>
+                        & Attendance.
+                    </h1>
+
+                    <p class="hero-description">
+                        EventSync makes college event participation simple,
+                        secure and verifiable with dynamic QR verification,
+                        live face verification and teacher notifications.
+                    </p>
+
+                    <div class="hero-actions">
+
+                        {% if session.get("user_id") %}
+
+                            {% if session.get("user_role") == "student" %}
+
+                                <a
+                                    href="/student/dashboard"
+                                    class="btn btn-primary"
+                                >
+                                    Go to Student Dashboard
+                                </a>
+
+                            {% elif session.get("user_role") == "teacher" %}
+
+                                <a
+                                    href="/teacher/dashboard"
+                                    class="btn btn-primary"
+                                >
+                                    Go to Teacher Dashboard
+                                </a>
+
+                            {% elif session.get("user_role") == "admin" %}
+
+                                <a
+                                    href="/admin/dashboard"
+                                    class="btn btn-primary"
+                                >
+                                    Go to Admin Dashboard
+                                </a>
+
+                            {% endif %}
+
+                            <a
+                                href="/events/"
+                                class="btn btn-secondary"
+                            >
+                                Explore Events
+                            </a>
+
+                        {% else %}
+
+                            <a
+                                href="/register"
+                                class="btn btn-primary"
+                            >
+                                Create Student Account
+                            </a>
+
+                            <a
+                                href="/events/"
+                                class="btn btn-secondary"
+                            >
+                                Explore Events
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="hero-trust">
+
+                        <div class="trust-item">
+                            <strong>QR</strong>
+                            <span>Dynamic Verification</span>
+                        </div>
+
+                        <div class="trust-item">
+                            <strong>Face</strong>
+                            <span>Live Verification</span>
+                        </div>
+
+                        <div class="trust-item">
+                            <strong>100%</strong>
+                            <span>Teacher Control</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     HERO VISUAL
+                ================================================== -->
+
+                <div class="hero-visual">
+
+                    <div class="dashboard-preview">
+
+                        <div class="preview-topbar">
+
+                            <div class="preview-brand">
+                                <span class="preview-logo">E</span>
+                                <span>EventSync</span>
+                            </div>
+
+                            <span class="preview-status">
+                                LIVE
+                            </span>
+
+                        </div>
+
+
+                        <div class="preview-body">
+
+                            <div class="preview-heading">
+                                <div>
+                                    <small>EVENT VERIFICATION</small>
+                                    <h3>TechNova 2026</h3>
+                                </div>
+
+                                <span class="status-badge">
+                                    Active
+                                </span>
+                            </div>
+
+
+                            <div class="preview-card">
+
+                                <div class="preview-icon qr-icon">
+                                    QR
+                                </div>
+
+                                <div class="preview-info">
+                                    <strong>QR Verified</strong>
+                                    <span>Dynamic token accepted</span>
+                                </div>
+
+                                <span class="check-mark">
+                                    ✓
+                                </span>
+
+                            </div>
+
+
+                            <div class="preview-card">
+
+                                <div class="preview-icon face-icon">
+                                    ◉
+                                </div>
+
+                                <div class="preview-info">
+                                    <strong>Face Verified</strong>
+                                    <span>Student identity matched</span>
+                                </div>
+
+                                <span class="check-mark">
+                                    ✓
+                                </span>
+
+                            </div>
+
+
+                            <div class="preview-card">
+
+                                <div class="preview-icon student-icon">
+                                    S
+                                </div>
+
+                                <div class="preview-info">
+                                    <strong>Student Verified</strong>
+                                    <span>Event presence recorded</span>
+                                </div>
+
+                                <span class="check-mark">
+                                    ✓
+                                </span>
+
+                            </div>
+
+
+                            <div class="verification-success">
+
+                                <span class="success-icon">
+                                    ✓
+                                </span>
+
+                                <div>
+                                    <strong>
+                                        EVENT PRESENCE VERIFIED
+                                    </strong>
+
+                                    <small>
+                                        Teacher has been notified
+                                    </small>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================================================
+             FEATURES
+        ========================================================== -->
+
+        <section class="features-section">
+
+            <div class="landing-container">
+
+                <div class="section-heading">
+
+                    <span class="section-label">
+                        WHY EVENTSYNC
+                    </span>
+
+                    <h2>
+                        Everything needed for
+                        <span>smart event management</span>
+                    </h2>
+
+                    <p>
+                        One platform for students, teachers and administrators.
+                    </p>
+
+                </div>
+
+
+                <div class="feature-grid">
+
+                    <article class="feature-card">
+
+                        <div class="feature-icon">
+                            QR
+                        </div>
+
+                        <h3>
+                            Dynamic QR Verification
+                        </h3>
+
+                        <p>
+                            Short-lived QR tokens help ensure that event
+                            verification happens at the right place and time.
+                        </p>
+
+                    </article>
+
+
+                    <article class="feature-card">
+
+                        <div class="feature-icon">
+                            ◉
+                        </div>
+
+                        <h3>
+                            Face Verification
+                        </h3>
+
+                        <p>
+                            Students verify their identity using live camera
+                            verification before event presence is confirmed.
+                        </p>
+
+                    </article>
+
+
+                    <article class="feature-card">
+
+                        <div class="feature-icon">
+                            ✓
+                        </div>
+
+                        <h3>
+                            Teacher Notifications
+                        </h3>
+
+                        <p>
+                            Teachers receive verified student information
+                            so they can manually handle lecture attendance.
+                        </p>
+
+                    </article>
+
+
+                    <article class="feature-card">
+
+                        <div class="feature-icon">
+                            📊
+                        </div>
+
+                        <h3>
+                            Academic Attendance
+                        </h3>
+
+                        <p>
+                            Lecture attendance remains completely separate
+                            and is manually marked by teachers.
+                        </p>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================================================
+             WORKFLOW
+        ========================================================== -->
+
+        <section class="workflow-section">
+
+            <div class="landing-container">
+
+                <div class="section-heading">
+
+                    <span class="section-label">
+                        SIMPLE WORKFLOW
+                    </span>
+
+                    <h2>
+                        From registration to
+                        <span>verified presence</span>
+                    </h2>
+
+                </div>
+
+
+                <div class="workflow-grid">
+
+                    <div class="workflow-step">
+
+                        <span class="step-number">
+                            01
+                        </span>
+
+                        <h3>
+                            Register
+                        </h3>
+
+                        <p>
+                            Student registers for an event as a participant
+                            or student coordinator.
+                        </p>
+
+                    </div>
+
+
+                    <div class="workflow-line"></div>
+
+
+                    <div class="workflow-step">
+
+                        <span class="step-number">
+                            02
+                        </span>
+
+                        <h3>
+                            Scan QR
+                        </h3>
+
+                        <p>
+                            Student scans the active dynamic QR generated
+                            for the event.
+                        </p>
+
+                    </div>
+
+
+                    <div class="workflow-line"></div>
+
+
+                    <div class="workflow-step">
+
+                        <span class="step-number">
+                            03
+                        </span>
+
+                        <h3>
+                            Verify Face
+                        </h3>
+
+                        <p>
+                            The student completes live face verification
+                            through the camera.
+                        </p>
+
+                    </div>
+
+
+                    <div class="workflow-line"></div>
+
+
+                    <div class="workflow-step">
+
+                        <span class="step-number">
+                            04
+                        </span>
+
+                        <h3>
+                            Notify Teacher
+                        </h3>
+
+                        <p>
+                            The responsible teacher receives the verified
+                            student's event information.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================================================
+             ROLE SECTION
+        ========================================================== -->
+
+        <section class="roles-section">
+
+            <div class="landing-container">
+
+                <div class="section-heading">
+
+                    <span class="section-label">
+                        BUILT FOR EVERY ROLE
+                    </span>
+
+                    <h2>
+                        One system,
+                        <span>three experiences</span>
+                    </h2>
+
+                </div>
+
+
+                <div class="role-grid">
+
+                    <article class="role-card">
+
+                        <div class="role-number">
+                            S
+                        </div>
+
+                        <h3>
+                            Students
+                        </h3>
+
+                        <p>
+                            Discover events, register, verify participation,
+                            view event history and manage coordinator
+                            responsibilities.
+                        </p>
+
+                        <a href="/register">
+                            Register as Student →
+                        </a>
+
+                    </article>
+
+
+                    <article class="role-card">
+
+                        <div class="role-number">
+                            T
+                        </div>
+
+                        <h3>
+                            Teachers
+                        </h3>
+
+                        <p>
+                            Manage lectures, receive event verification
+                            notifications, coordinate assigned events and
+                            manually mark academic attendance.
+                        </p>
+
+                        <a href="/login">
+                            Teacher Login →
+                        </a>
+
+                    </article>
+
+
+                    <article class="role-card">
+
+                        <div class="role-number">
+                            A
+                        </div>
+
+                        <h3>
+                            Administrators
+                        </h3>
+
+                        <p>
+                            Manage users, departments, subjects, lectures,
+                            events, coordinators and verification reports.
+                        </p>
+
+                        <a href="/login">
+                            Admin Login →
+                        </a>
+
+                    </article>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================================================
+             CTA
+        ========================================================== -->
+
+        <section class="cta-section">
+
+            <div class="landing-container">
+
+                <div class="cta-card">
+
+                    <div>
+
+                        <span class="section-label">
+                            GET STARTED
+                        </span>
+
+                        <h2>
+                            Ready to make college events smarter?
+                        </h2>
+
+                        <p>
+                            Join EventSync and bring event participation,
+                            verification and academic coordination together.
+                        </p>
+
+                    </div>
+
+
+                    <div class="cta-actions">
+
+                        {% if session.get("user_id") %}
+
+                            <a
+                                href="/events/"
+                                class="btn btn-primary"
+                            >
+                                View Events
+                            </a>
+
+                        {% else %}
+
+                            <a
+                                href="/register"
+                                class="btn btn-primary"
+                            >
+                                Create Account
+                            </a>
+
+                            <a
+                                href="/login"
+                                class="btn btn-secondary"
+                            >
+                                Login
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================================================
+         FOOTER
+    ========================================================== -->
+
+    <footer class="landing-footer">
+
+        <div class="landing-container footer-inner">
+
+            <div>
+
+                <div class="brand-logo footer-brand">
+                    <span class="brand-mark">E</span>
+
+                    <span>
+                        <strong>EventSync</strong>
+                        <small>College Event Platform</small>
+                    </span>
+                </div>
+
+                <p>
+                    Smart event participation and academic attendance
+                    management for modern colleges.
+                </p>
+
+            </div>
+
+
+            <div class="footer-links">
+
+                <a href="/">Home</a>
+                <a href="/events/">Events</a>
+                <a href="/login">Login</a>
+                <a href="/register">Register</a>
+
+            </div>
+
+
+            <div class="footer-copy">
+                © 2026 EventSync. Built for college innovation.
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <!-- =========================================================
+         JAVASCRIPT
+    ========================================================== -->
+
+    <script
+        src="{{ url_for('static', filename='js/eventsync.js') }}"
+    ></script>
+
+</body>
+</html>

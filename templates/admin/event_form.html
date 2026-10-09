@@ -1,0 +1,465 @@
+
+<div class="page-shell">
+    <div class="page-header">
+        <div>
+            <a href="{{ url_for('admin.events') }}" class="back-link">← Back to Events</a>
+            <h1>{{ "Edit Event" if event else "Create Event" }}</h1>
+            <p>{{ "Update event information and settings." if event else "Create a new college event." }}</p>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <form method="POST"
+              action="{{ url_for('event.admin_edit_event', event_id=event.id) if event else url_for('admin.create_event') }}">
+
+            <div class="form-section">
+                <h2>Event Information</h2>
+
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label for="event_name">Event Name *</label>
+                        <input
+                            type="text"
+                            id="event_name"
+                            name="event_name"
+                            required
+                            maxlength="150"
+                            value="{{ event.event_name if event else '' }}"
+                            placeholder="e.g. TechNova 2026"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event_category">Category *</label>
+                        <select id="event_category" name="event_category" required>
+                            {% set categories = [
+                                "Technical",
+                                "Sports",
+                                "Cultural",
+                                "Placement & Career",
+                                "Competitions",
+                                "Research & Innovation",
+                                "College Fest",
+                                "Other"
+                            ] %}
+
+                            <option value="">Select category</option>
+                            {% for category in categories %}
+                                <option value="{{ category }}"
+                                    {% if event and event.event_category == category %}selected{% endif %}>
+                                    {{ category }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event_type">Event Type *</label>
+                        <input
+                            type="text"
+                            id="event_type"
+                            name="event_type"
+                            required
+                            maxlength="100"
+                            value="{{ event.event_type if event else '' }}"
+                            placeholder="e.g. Hackathon"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event_date">Event Date *</label>
+                        <input
+                            type="date"
+                            id="event_date"
+                            name="event_date"
+                            required
+                            value="{{ event.event_date if event else '' }}"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="venue">Venue *</label>
+                        <input
+                            type="text"
+                            id="venue"
+                            name="venue"
+                            required
+                            maxlength="150"
+                            value="{{ event.venue if event else '' }}"
+                            placeholder="e.g. Main Auditorium"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="start_time">Start Time *</label>
+                        <input
+                            type="time"
+                            id="start_time"
+                            name="start_time"
+                            required
+                            value="{{ event.start_time if event else '' }}"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="end_time">End Time *</label>
+                        <input
+                            type="time"
+                            id="end_time"
+                            name="end_time"
+                            required
+                            value="{{ event.end_time if event else '' }}"
+                        >
+                    </div>
+
+                    <div class="form-group full">
+                        <label for="description">Description</label>
+                        <textarea
+                            id="description"
+                            name="description"
+                            rows="5"
+                            maxlength="2000"
+                            placeholder="Describe the event, eligibility, activities, instructions, etc."
+                        >{{ event.description if event else '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            {% if event %}
+            <div class="form-section">
+                <h2>Event Status</h2>
+
+                <div class="status-info">
+                    <div>
+                        <strong>Current Status</strong>
+                        <span class="status-badge status-{{ event.status|lower }}">
+                            {{ event.status|replace("_", " ")|title }}
+                        </span>
+                    </div>
+
+                    <p>
+                        Event status controls whether students can participate
+                        and whether verification can take place.
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">Change Status</label>
+                    <select id="status" name="status">
+                        {% for status in ["draft", "upcoming", "live", "completed", "cancelled"] %}
+                            <option value="{{ status }}"
+                                {% if event.status == status %}selected{% endif %}>
+                                {{ status|replace("_", " ")|title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="form-section">
+                <h2>Verification Workflow</h2>
+
+                <div class="workflow-grid">
+                    <div class="workflow-item">
+                        <div class="workflow-number">1</div>
+                        <div>
+                            <strong>Student Registration</strong>
+                            <p>Student registers for the event.</p>
+                        </div>
+                    </div>
+
+                    <div class="workflow-item">
+                        <div class="workflow-number">2</div>
+                        <div>
+                            <strong>Dynamic QR</strong>
+                            <p>Coordinator generates a short-lived QR token.</p>
+                        </div>
+                    </div>
+
+                    <div class="workflow-item">
+                        <div class="workflow-number">3</div>
+                        <div>
+                            <strong>Face Verification</strong>
+                            <p>Student verifies their identity using camera capture.</p>
+                        </div>
+                    </div>
+
+                    <div class="workflow-item">
+                        <div class="workflow-number">4</div>
+                        <div>
+                            <strong>Presence Verified</strong>
+                            <p>Successful verification is recorded for the event.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{{ url_for('admin.events') }}" class="btn btn-secondary">
+                    Cancel
+                </a>
+
+                <button type="submit" class="btn btn-primary">
+                    {{ "Update Event" if event else "Create Event" }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .page-shell {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 24px 60px;
+    }
+
+    .page-header {
+        margin-bottom: 24px;
+    }
+
+    .page-header h1 {
+        margin: 8px 0 6px;
+        font-size: 32px;
+    }
+
+    .page-header p {
+        margin: 0;
+        color: var(--text-muted, #64748b);
+    }
+
+    .back-link {
+        color: var(--primary, #2563eb);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .form-card {
+        background: var(--card-bg, #ffffff);
+        border: 1px solid var(--border, #e2e8f0);
+        border-radius: 18px;
+        padding: 28px;
+        box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    .form-section {
+        padding: 24px 0;
+        border-bottom: 1px solid var(--border, #e2e8f0);
+    }
+
+    .form-section:first-child {
+        padding-top: 0;
+    }
+
+    .form-section:last-of-type {
+        border-bottom: 0;
+    }
+
+    .form-section h2 {
+        margin: 0 0 20px;
+        font-size: 20px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    .form-group label {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text, #0f172a);
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid var(--border, #cbd5e1);
+        border-radius: 10px;
+        padding: 12px 14px;
+        font: inherit;
+        background: #fff;
+        color: var(--text, #0f172a);
+        outline: none;
+        transition: border-color .2s, box-shadow .2s;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        border-color: var(--primary, #2563eb);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
+    }
+
+    .status-info {
+        padding: 16px;
+        border-radius: 12px;
+        background: #f8fafc;
+        margin-bottom: 18px;
+    }
+
+    .status-info > div {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .status-info p {
+        margin: 10px 0 0;
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    .status-live {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-upcoming {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .status-completed {
+        background: #e2e8f0;
+        color: #475569;
+    }
+
+    .status-cancelled {
+        background: #fee2e2;
+        color: #b91c1c;
+    }
+
+    .status-draft {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .workflow-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .workflow-item {
+        display: flex;
+        gap: 14px;
+        padding: 18px;
+        border: 1px solid var(--border, #e2e8f0);
+        border-radius: 14px;
+        background: #f8fafc;
+    }
+
+    .workflow-number {
+        width: 32px;
+        height: 32px;
+        flex: 0 0 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--primary, #2563eb);
+        color: #fff;
+        font-weight: 800;
+    }
+
+    .workflow-item strong {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .workflow-item p {
+        margin: 0;
+        color: #64748b;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding-top: 24px;
+    }
+
+    .btn {
+        border: 0;
+        border-radius: 10px;
+        padding: 11px 18px;
+        text-decoration: none;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        background: var(--primary, #2563eb);
+        color: #fff;
+    }
+
+    .btn-secondary {
+        background: #e2e8f0;
+        color: #334155;
+    }
+
+    @media (max-width: 700px) {
+        .page-shell {
+            padding: 24px 16px 40px;
+        }
+
+        .form-card {
+            padding: 20px;
+        }
+
+        .form-grid,
+        .workflow-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group.full {
+            grid-column: auto;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+        }
+    }
+</style>

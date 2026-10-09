@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Verification Result | EventSync</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/eventsync.css') }}">
+
+    <style>
+        .result-page {
+            min-height: 100vh;
+            padding: 45px 20px 70px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            box-sizing: border-box;
+        }
+
+        .result-container {
+            width: 100%;
+            max-width: 850px;
+        }
+
+        .result-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 22px;
+            padding: 38px;
+            box-shadow: 0 15px 45px rgba(15, 23, 42, 0.08);
+            text-align: center;
+        }
+
+        .result-icon {
+            width: 78px;
+            height: 78px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 38px;
+            font-weight: 800;
+        }
+
+        .result-icon.success {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .result-icon.failed {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .result-icon.pending {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .result-card h1 {
+            margin: 0 0 10px;
+            font-size: 30px;
+        }
+
+        .result-message {
+            max-width: 620px;
+            margin: 0 auto;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .event-card {
+            margin-top: 28px;
+            padding: 22px;
+            border-radius: 16px;
+            background: #f8fafc;
+            text-align: left;
+        }
+
+        .event-card h2 {
+            margin: 0 0 16px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .detail-item {
+            padding: 13px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 11px;
+        }
+
+        .detail-label {
+            display: block;
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .checks {
+            margin-top: 25px;
+            display: grid;
+            gap: 10px;
+            text-align: left;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 14px 16px;
+            border-radius: 11px;
+            background: #f8fafc;
+        }
+
+        .check-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .check-mark {
+            width: 27px;
+            height: 27px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .check-mark.success {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .check-mark.failed {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .check-mark.pending {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .verification-time {
+            margin-top: 20px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .actions {
+            margin-top: 28px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 10px;
+            padding: 11px 18px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .btn-success {
+            background: #16a34a;
+            color: #ffffff;
+        }
+
+        .notice {
+            margin-top: 22px;
+            padding: 14px 16px;
+            border-radius: 11px;
+            text-align: left;
+            background: #eff6ff;
+            color: #1e40af;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 650px) {
+            .result-card {
+                padding: 25px 18px;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .result-card h1 {
+                font-size: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="result-page">
+
+    <div class="result-container">
+
+        {% set status = verification.verification_status if verification else 'failed' %}
+        {% set is_verified = status == 'verified' %}
+        {% set is_pending = status == 'pending' %}
+
+        <div class="result-card">
+
+            {% if is_verified %}
+
+                <div class="result-icon success">
+                    ✓
+                </div>
+
+                <h1>Event Presence Verified</h1>
+
+                <p class="result-message">
+                    Your presence for this event has been successfully verified.
+                    The verification has been recorded in EventSync.
+                </p>
+
+            {% elif is_pending %}
+
+                <div class="result-icon pending">
+                    !
+                </div>
+
+                <h1>Verification Pending</h1>
+
+                <p class="result-message">
+                    Your verification is currently pending.
+                    Please wait or try again after checking the event QR and camera.
+                </p>
+
+            {% else %}
+
+                <div class="result-icon failed">
+                    ✕
+                </div>
+
+                <h1>Verification Failed</h1>
+
+                <p class="result-message">
+                    We could not verify your event presence.
+                    Please review the checks below and try again if the event is still active.
+                </p>
+
+            {% endif %}
+
+
+            <!-- EVENT DETAILS -->
+            <div class="event-card">
+
+                <h2>
+                    {{ event.event_name if event else 'Event' }}
+                </h2>
+
+                {% if event %}
+
+                <div class="details-grid">
+
+                    <div class="detail-item">
+                        <span class="detail-label">Category</span>
+                        <span class="detail-value">
+                            {{ event.event_category }}
+                        </span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Event Type</span>
+                        <span class="detail-value">
+                            {{ event.event_type }}
+                        </span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Date</span>
+                        <span class="detail-value">
+                            {{ event.event_date }}
+                        </span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Time</span>
+                        <span class="detail-value">
+                            {{ event.start_time }} – {{ event.end_time }}
+                        </span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Venue</span>
+                        <span class="detail-value">
+                            {{ event.venue }}
+                        </span>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Status</span>
+                        <span class="detail-value">
+                            {{ event.status|capitalize }}
+                        </span>
+                    </div>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- VERIFICATION CHECKS -->
+            <div class="checks">
+
+                <div class="check-item">
+
+                    <div class="check-left">
+
+                        <div class="check-mark
+                            {% if verification and verification.qr_verified %}
+                                success
+                            {% else %}
+                                failed
+                            {% endif %}">
+                            {% if verification and verification.qr_verified %}
+                                ✓
+                            {% else %}
+                                ✕
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <strong>Dynamic QR Verification</strong>
+                            <div class="muted">
+                                Server-side event QR validation
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {% if verification and verification.qr_verified %}
+                        <span class="badge badge-success">Verified</span>
+                    {% else %}
+                        <span class="badge badge-danger">Failed</span>
+                    {% endif %}
+
+                </div>
+
+
+                <div class="check-item">
+
+                    <div class="check-left">
+
+                        <div class="check-mark
+                            {% if verification and verification.face_verified %}
+                                success
+                            {% else %}
+                                failed
+                            {% endif %}">
+                            {% if verification and verification.face_verified %}
+                                ✓
+                            {% else %}
+                                ✕
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <strong>Face Verification</strong>
+                            <div class="muted">
+                                Live face verification check
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {% if verification and verification.face_verified %}
+                        <span class="badge badge-success">Verified</span>
+                    {% else %}
+                        <span class="badge badge-danger">Failed</span>
+                    {% endif %}
+
+                </div>
+
+
+                <div class="check-item">
+
+                    <div class="check-left">
+
+                        <div class="check-mark
+                            {% if is_verified %}
+                                success
+                            {% elif is_pending %}
+                                pending
+                            {% else %}
+                                failed
+                            {% endif %}">
+                            {% if is_verified %}
+                                ✓
+                            {% elif is_pending %}
+                                !
+                            {% else %}
+                                ✕
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            <strong>Overall Verification</strong>
+                            <div class="muted">
+                                Event presence verification status
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {% if is_verified %}
+                        <span class="badge badge-success">Verified</span>
+                    {% elif is_pending %}
+                        <span class="badge badge-warning">Pending</span>
+                    {% else %}
+                        <span class="badge badge-danger">Failed</span>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+
+            {% if verification and verification.confidence is not none %}
+
+                <div class="verification-time">
+                    Face match confidence:
+                    <strong>
+                        {{ "%.1f"|format((verification.confidence or 0) * 100) }}%
+                    </strong>
+                </div>
+
+            {% endif %}
+
+
+            {% if verification and verification.verified_at %}
+
+                <div class="verification-time">
+                    Verified at:
+                    <strong>{{ verification.verified_at }}</strong>
+                </div>
+
+            {% endif %}
+
+
+            {% if is_verified %}
+
+                <div class="notice">
+                    <strong>Academic attendance note:</strong>
+                    Event verification does not automatically mark your academic
+                    lecture attendance. Academic attendance remains a separate
+                    manual process handled by the teacher.
+                </div>
+
+            {% elif not is_pending %}
+
+                <div class="notice">
+                    Make sure the event is currently live, you are registered for
+                    the event, the QR token is active, and your face is clearly
+                    visible to the camera before trying again.
+                </div>
+
+            {% endif %}
+
+
+            <!-- ACTIONS -->
+            <div class="actions">
+
+                <a class="btn btn-primary"
+                   href="{{ url_for('student.dashboard') }}">
+                    Dashboard
+                </a>
+
+                {% if event %}
+
+                    {% if not is_verified %}
+
+                        <a class="btn btn-success"
+                           href="{{ url_for('verification.verify_event', event_id=event.id) }}">
+                            Try Verification Again
+                        </a>
+
+                    {% endif %}
+
+                    <a class="btn btn-secondary"
+                       href="{{ url_for('event.event_details', event_id=event.id) }}">
+                        Event Details
+                    </a>
+
+                {% endif %}
+
+                <a class="btn btn-secondary"
+                   href="{{ url_for('student.my_events') }}">
+                    My Events
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

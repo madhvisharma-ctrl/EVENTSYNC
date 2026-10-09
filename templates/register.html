@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Create Student Account | EventSync</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/eventsync.css') }}"
+    >
+</head>
+
+<body class="auth-page">
+
+    <main class="auth-shell">
+
+        <section class="auth-card auth-card-wide">
+
+            <div class="auth-header">
+                <div class="brand-mark">ES</div>
+
+                <div>
+                    <p class="eyebrow">EVENTSYNC</p>
+                    <h1>Create Student Account</h1>
+                    <p class="auth-subtitle">
+                        Register once and use EventSync for academic attendance,
+                        events and verification.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-stack">
+                        {% for category, message in messages %}
+                            <div class="flash-message {{ category }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form
+                method="POST"
+                action="{{ url_for('auth.register') }}"
+                class="auth-form"
+                id="registerForm"
+            >
+
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <div class="form-section-heading">
+                        <h2>Basic Information</h2>
+                        <p>Your identity details for the EventSync account.</p>
+                    </div>
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                placeholder="Enter your full name"
+                                autocomplete="name"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">College Email</label>
+
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="student@example.com"
+                                autocomplete="email"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="roll_no">Roll Number</label>
+
+                            <input
+                                type="text"
+                                id="roll_no"
+                                name="roll_no"
+                                placeholder="e.g. CSE2026001"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="department_id">Department</label>
+
+                            <select
+                                id="department_id"
+                                name="department_id"
+                                required
+                            >
+                                <option value="">Select Department</option>
+
+                                {% for department in departments %}
+                                    <option value="{{ department.id }}">
+                                        {{ department.code }} - {{ department.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="semester">Semester</label>
+
+                            <select
+                                id="semester"
+                                name="semester"
+                                required
+                            >
+                                <option value="">Select Semester</option>
+                                {% for sem in range(1, 9) %}
+                                    <option value="{{ sem }}">
+                                        Semester {{ sem }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="section">Section</label>
+
+                            <input
+                                type="text"
+                                id="section"
+                                name="section"
+                                placeholder="e.g. A"
+                                maxlength="20"
+                                required
+                            >
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="form-section">
+
+                    <div class="form-section-heading">
+                        <h2>Account Security</h2>
+                        <p>Create a secure password for your account.</p>
+                    </div>
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+                            <label for="password">Password</label>
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Create a password"
+                                autocomplete="new-password"
+                                minlength="8"
+                                required
+                            >
+
+                            <small class="form-help">
+                                Use at least 8 characters.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirm_password">
+                                Confirm Password
+                            </label>
+
+                            <input
+                                type="password"
+                                id="confirm_password"
+                                name="confirm_password"
+                                placeholder="Re-enter your password"
+                                autocomplete="new-password"
+                                minlength="8"
+                                required
+                            >
+
+                            <small
+                                class="form-help"
+                                id="passwordMessage"
+                            ></small>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Optional Face Registration -->
+                <div class="form-section">
+
+                    <div class="form-section-heading">
+                        <h2>Face Verification</h2>
+
+                        <p>
+                            You can register a face image now for faster event
+                            verification later.
+                        </p>
+                    </div>
+
+                    <div class="face-register-box">
+
+                        <div class="face-register-info">
+                            <div class="info-icon">◉</div>
+
+                            <div>
+                                <strong>Optional during registration</strong>
+
+                                <p>
+                                    A clear front-facing photo works best.
+                                    Your face image is used only for EventSync
+                                    verification.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="face_image">
+                                Upload Face Image
+                            </label>
+
+                            <input
+                                type="file"
+                                id="face_image"
+                                name="face_image"
+                                accept="image/png,image/jpeg,image/jpg"
+                            >
+
+                            <small class="form-help">
+                                JPG or PNG recommended.
+                            </small>
+                        </div>
+
+                        <!-- Hidden field used by the backend -->
+                        <input
+                            type="hidden"
+                            id="face_image_base64"
+                            name="face_image_base64"
+                        >
+
+                        <div
+                            id="facePreview"
+                            class="face-preview"
+                            hidden
+                        >
+                            <img
+                                id="facePreviewImage"
+                                src=""
+                                alt="Face preview"
+                            >
+
+                            <button
+                                type="button"
+                                class="btn btn-secondary btn-small"
+                                id="removeFaceImage"
+                            >
+                                Remove Photo
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Event Participation Explanation -->
+                <div class="registration-note">
+
+                    <div class="info-icon">i</div>
+
+                    <div>
+                        <strong>Event participation roles</strong>
+
+                        <p>
+                            After creating your account, you can register for
+                            individual events as either a
+                            <strong>Participant</strong> or
+                            <strong>Student Coordinator</strong>.
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- Terms -->
+                <div class="form-check">
+
+                    <input
+                        type="checkbox"
+                        id="agree"
+                        name="agree"
+                        required
+                    >
+
+                    <label for="agree">
+                        I confirm that the information provided is correct and
+                        I will use EventSync responsibly.
+                    </label>
+
+                </div>
+
+                <!-- Submit -->
+                <button
+                    type="submit"
+                    class="btn btn-primary btn-full"
+                    id="registerButton"
+                >
+                    Create Student Account
+                </button>
+
+            </form>
+
+            <div class="auth-footer">
+
+                <p>
+                    Already have an account?
+                    <a href="{{ url_for('auth.login') }}">
+                        Login here
+                    </a>
+                </p>
+
+                <a
+                    href="{{ url_for('index') }}"
+                    class="back-link"
+                >
+                    ← Back to EventSync
+                </a>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="{{ url_for('static', filename='js/eventsync.js') }}"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const form = document.getElementById("registerForm");
+            const password = document.getElementById("password");
+            const confirmPassword =
+                document.getElementById("confirm_password");
+
+            const passwordMessage =
+                document.getElementById("passwordMessage");
+
+            const faceInput =
+                document.getElementById("face_image");
+
+            const faceBase64 =
+                document.getElementById("face_image_base64");
+
+            const facePreview =
+                document.getElementById("facePreview");
+
+            const facePreviewImage =
+                document.getElementById("facePreviewImage");
+
+            const removeFaceImage =
+                document.getElementById("removeFaceImage");
+
+            /*
+             * Password confirmation
+             */
+            function validatePasswords() {
+
+                if (!confirmPassword.value) {
+                    passwordMessage.textContent = "";
+                    return true;
+                }
+
+                if (password.value !== confirmPassword.value) {
+                    passwordMessage.textContent =
+                        "Passwords do not match.";
+
+                    passwordMessage.classList.add("text-danger");
+
+                    return false;
+                }
+
+                passwordMessage.textContent =
+                    "Passwords match.";
+
+                passwordMessage.classList.remove("text-danger");
+
+                return true;
+            }
+
+            password.addEventListener(
+                "input",
+                validatePasswords
+            );
+
+            confirmPassword.addEventListener(
+                "input",
+                validatePasswords
+            );
+
+            /*
+             * Convert uploaded face image to base64.
+             * The backend receives this through the hidden field.
+             */
+            faceInput.addEventListener("change", function () {
+
+                const file = this.files[0];
+
+                if (!file) {
+                    faceBase64.value = "";
+                    facePreview.hidden = true;
+                    return;
+                }
+
+                if (!file.type.startsWith("image/")) {
+
+                    alert("Please select a valid image file.");
+
+                    this.value = "";
+                    faceBase64.value = "";
+                    facePreview.hidden = true;
+
+                    return;
+                }
+
+                const reader = new FileReader();
+
+                reader.onload = function (event) {
+
+                    const result = event.target.result;
+
+                    faceBase64.value = result;
+
+                    facePreviewImage.src = result;
+
+                    facePreview.hidden = false;
+                };
+
+                reader.readAsDataURL(file);
+            });
+
+            /*
+             * Remove selected face image.
+             */
+            removeFaceImage.addEventListener(
+                "click",
+                function () {
+
+                    faceInput.value = "";
+                    faceBase64.value = "";
+
+                    facePreviewImage.src = "";
+
+                    facePreview.hidden = true;
+                }
+            );
+
+            /*
+             * Final client-side validation.
+             */
+            form.addEventListener("submit", function (event) {
+
+                if (!validatePasswords()) {
+
+                    event.preventDefault();
+
+                    confirmPassword.focus();
+
+                    return;
+                }
+
+                if (password.value.length < 8) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "Password must contain at least 8 characters."
+                    );
+
+                    password.focus();
+
+                    return;
+                }
+
+            });
+
+        });
+    </script>
+
+</body>
+</html>

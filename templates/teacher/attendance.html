@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Attendance | EventSync</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/eventsync.css') }}">
+
+    <style>
+        .page-wrap {
+            min-height: 100vh;
+            display: flex;
+            background: #f5f7fb;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #111827;
+            color: #fff;
+            padding: 24px 16px;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 28px;
+            padding: 0 12px;
+        }
+
+        .nav-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #9ca3af;
+            margin: 20px 12px 8px;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 11px 12px;
+            border-radius: 9px;
+            color: #d1d5db;
+            text-decoration: none;
+            margin-bottom: 4px;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #1f2937;
+            color: #fff;
+        }
+
+        .main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 18px 28px;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #111827;
+        }
+
+        .topbar p {
+            margin: 5px 0 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 28px;
+        }
+
+        .alert {
+            padding: 13px 16px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .alert-error,
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .section-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            margin-bottom: 22px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #111827;
+        }
+
+        .section-body {
+            padding: 20px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            align-items: end;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 7px;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .field input,
+        .field select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 11px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: #fff;
+            color: #111827;
+            outline: none;
+        }
+
+        .field input:focus,
+        .field select:focus {
+            border-color: #2563eb;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 650;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #f9fafb;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-success {
+            background: #16a34a;
+            border-color: #16a34a;
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            border-color: #dc2626;
+            color: #fff;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 13px 14px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        th {
+            background: #f9fafb;
+            color: #374151;
+            font-weight: 700;
+        }
+
+        td {
+            color: #4b5563;
+        }
+
+        .student-name {
+            color: #111827;
+            font-weight: 700;
+        }
+
+        .roll {
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            padding: 5px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .status-present {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-absent {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-late {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-pending {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px 15px;
+            color: #6b7280;
+        }
+
+        .info-box {
+            padding: 15px 17px;
+            border-radius: 10px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+            line-height: 1.6;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .attendance-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 9px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 1000px) {
+            .filter-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 720px) {
+            .page-wrap {
+                display: block;
+            }
+
+            .sidebar {
+                width: auto;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .topbar {
+                padding: 16px;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page-wrap">
+
+    <aside class="sidebar">
+
+        <div class="brand">EventSync</div>
+
+        <div class="nav-title">Teacher</div>
+
+        <a href="{{ url_for('teacher.dashboard') }}" class="nav-link">
+            Dashboard
+        </a>
+
+        <a href="{{ url_for('teacher.attendance') }}" class="nav-link active">
+            Academic Attendance
+        </a>
+
+        <a href="{{ url_for('teacher.verified_students') }}" class="nav-link">
+            Verified Students
+        </a>
+
+        <a href="{{ url_for('teacher.notifications') }}" class="nav-link">
+            Notifications
+        </a>
+
+        <a href="{{ url_for('teacher.coordinator') }}" class="nav-link">
+            Event Coordination
+        </a>
+
+        <div class="nav-title">Account</div>
+
+        <a href="{{ url_for('auth.logout') }}" class="nav-link">
+            Logout
+        </a>
+
+    </aside>
+
+    <main class="main">
+
+        <header class="topbar">
+            <h1>Academic Attendance</h1>
+            <p>
+                Manually mark lecture attendance. Event verification
+                never automatically changes academic attendance.
+            </p>
+        </header>
+
+        <section class="content">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="info-box">
+                <strong>Manual attendance only:</strong>
+                Select one of your lectures and mark students as
+                Present, Absent, or Late. Students verified at an event
+                are only reported to you as notifications; their
+                lecture attendance must still be marked manually.
+            </div>
+
+            <div class="section-card">
+
+                <div class="section-header">
+                    <h2>Select Lecture</h2>
+                </div>
+
+                <div class="section-body">
+
+                    <form method="GET"
+                          action="{{ url_for('teacher.attendance') }}">
+
+                        <div class="filter-grid">
+
+                            <div class="field">
+                                <label for="lecture_id">
+                                    Lecture
+                                </label>
+
+                                <select name="lecture_id"
+                                        id="lecture_id"
+                                        required>
+
+                                    <option value="">
+                                        Select a lecture
+                                    </option>
+
+                                    {% for lecture in lectures or [] %}
+
+                                        <option value="{{ lecture.id }}"
+                                            {% if selected_lecture_id|string == lecture.id|string %}
+                                                selected
+                                            {% endif %}>
+
+                                            {{ lecture.subject_name or 'Subject' }}
+                                            —
+                                            {{ lecture.lecture_date }}
+                                            —
+                                            {{ lecture.start_time }}
+                                            —
+                                            Section {{ lecture.section or '-' }}
+
+                                        </option>
+
+                                    {% endfor %}
+
+                                </select>
+                            </div>
+
+                            <div class="field">
+                                <label for="date">
+                                    Date
+                                </label>
+
+                                <input type="date"
+                                       id="date"
+                                       name="date"
+                                       value="{{ selected_date or '' }}">
+                            </div>
+
+                            <div class="field">
+                                <label for="section">
+                                    Section
+                                </label>
+
+                                <input type="text"
+                                       id="section"
+                                       name="section"
+                                       value="{{ selected_section or '' }}"
+                                       placeholder="Example: A">
+                            </div>
+
+                            <div>
+                                <button type="submit"
+                                        class="btn btn-primary">
+                                    Load Attendance
+                                </button>
+                            </div>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+            {% if selected_lecture %}
+
+                <div class="section-card">
+
+                    <div class="section-header">
+                        <h2>
+                            {{ selected_lecture.subject_name or 'Lecture' }}
+                        </h2>
+
+                        <div style="margin-top:7px;color:#6b7280;font-size:13px;">
+                            {{ selected_lecture.lecture_date }}
+                            ·
+                            {{ selected_lecture.start_time }}
+                            –
+                            {{ selected_lecture.end_time }}
+                            ·
+                            Room {{ selected_lecture.room or 'TBA' }}
+                            ·
+                            Section {{ selected_lecture.section or '-' }}
+                        </div>
+                    </div>
+
+                    <div class="section-body">
+
+                        <div class="bulk-actions">
+
+                            {% if students %}
+
+                                <button type="button"
+                                        class="btn"
+                                        onclick="setAllStatus('present')">
+                                    Mark All Present
+                                </button>
+
+                                <button type="button"
+                                        class="btn"
+                                        onclick="setAllStatus('absent')">
+                                    Mark All Absent
+                                </button>
+
+                                <button type="button"
+                                        class="btn"
+                                        onclick="setAllStatus('late')">
+                                    Mark All Late
+                                </button>
+
+                            {% endif %}
+
+                        </div>
+
+                        {% if students %}
+
+                            <form method="POST"
+                                  action="{{ url_for('teacher.attendance') }}">
+
+                                <input type="hidden"
+                                       name="lecture_id"
+                                       value="{{ selected_lecture.id }}">
+
+                                <div class="table-wrap">
+
+                                    <table>
+
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Student</th>
+                                                <th>Roll No.</th>
+                                                <th>Email</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody>
+
+                                            {% for student in students %}
+
+                                                {% set current_status =
+                                                    attendance_map.get(student.id, 'absent')
+                                                    if attendance_map is defined
+                                                    else 'absent'
+                                                %}
+
+                                                <tr>
+
+                                                    <td>
+                                                        {{ loop.index }}
+                                                    </td>
+
+                                                    <td>
+                                                        <span class="student-name">
+                                                            {{ student.name }}
+                                                        </span>
+                                                    </td>
+
+                                                    <td class="roll">
+                                                        {{ student.roll_no or '-' }}
+                                                    </td>
+
+                                                    <td>
+                                                        {{ student.email }}
+                                                    </td>
+
+                                                    <td>
+
+                                                        <select
+                                                            name="attendance_{{ student.id }}"
+                                                            class="attendance-select"
+                                                            data-student="{{ student.id }}">
+
+                                                            <option value="present"
+                                                                {% if current_status == 'present' %}
+                                                                    selected
+                                                                {% endif %}>
+                                                                Present
+                                                            </option>
+
+                                                            <option value="absent"
+                                                                {% if current_status == 'absent' %}
+                                                                    selected
+                                                                {% endif %}>
+                                                                Absent
+                                                            </option>
+
+                                                            <option value="late"
+                                                                {% if current_status == 'late' %}
+                                                                    selected
+                                                                {% endif %}>
+                                                                Late
+                                                            </option>
+
+                                                        </select>
+
+                                                    </td>
+
+                                                </tr>
+
+                                            {% endfor %}
+
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+
+                                <div style="margin-top:18px;">
+
+                                    <button type="submit"
+                                            class="btn btn-primary">
+                                        Save Attendance
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        {% else %}
+
+                            <div class="empty">
+                                <h3>No students found</h3>
+                                <p>
+                                    No students are currently available
+                                    for this lecture/section.
+                                </p>
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+            {% if recent_attendance is defined %}
+
+                <div class="section-card">
+
+                    <div class="section-header">
+                        <h2>Recent Attendance</h2>
+                    </div>
+
+                    <div class="section-body">
+
+                        {% if recent_attendance %}
+
+                            <div class="table-wrap">
+
+                                <table>
+
+                                    <thead>
+                                        <tr>
+                                            <th>Student</th>
+                                            <th>Roll No.</th>
+                                            <th>Subject</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Marked At</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+
+                                        {% for row in recent_attendance %}
+
+                                            <tr>
+
+                                                <td>
+                                                    <span class="student-name">
+                                                        {{ row.student_name }}
+                                                    </span>
+                                                </td>
+
+                                                <td class="roll">
+                                                    {{ row.roll_no or '-' }}
+                                                </td>
+
+                                                <td>
+                                                    {{ row.subject_name or '-' }}
+                                                </td>
+
+                                                <td>
+                                                    {{ row.lecture_date or '-' }}
+                                                </td>
+
+                                                <td>
+
+                                                    {% if row.attendance_status == 'present' %}
+
+                                                        <span class="status-badge status-present">
+                                                            PRESENT
+                                                        </span>
+
+                                                    {% elif row.attendance_status == 'late' %}
+
+                                                        <span class="status-badge status-late">
+                                                            LATE
+                                                        </span>
+
+                                                    {% elif row.attendance_status == 'absent' %}
+
+                                                        <span class="status-badge status-absent">
+                                                            ABSENT
+                                                        </span>
+
+                                                    {% else %}
+
+                                                        <span class="status-badge status-pending">
+                                                            {{ row.attendance_status|upper }}
+                                                        </span>
+
+                                                    {% endif %}
+
+                                                </td>
+
+                                                <td>
+                                                    {{ row.marked_at or '-' }}
+                                                </td>
+
+                                            </tr>
+
+                                        {% endfor %}
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        {% else %}
+
+                            <div class="empty">
+                                No recent attendance records.
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    </main>
+
+</div>
+
+<script>
+    function setAllStatus(status) {
+        document.querySelectorAll(".attendance-select").forEach(function(select) {
+            select.value = status;
+        });
+    }
+</script>
+
+</body>
+</html>

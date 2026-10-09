@@ -1,0 +1,32 @@
+EventSync project audit
+=======================
+
+Changes applied
+---------------
+1. Added database.init_database_directory(), which app.py imports.
+2. Fixed login role redirects to use the actual blueprint endpoints:
+   student.dashboard, teacher.dashboard, admin.dashboard.
+3. Aligned app.py's dashboard redirect and template context with the
+   session key user_role used by the login/decorator code.
+4. Added session['email'] compatibility for the global template context.
+5. Removed the three stale base.html inheritance references from:
+   templates/admin/event_form.html
+   templates/admin/lectures.html
+   templates/admin/reports.html
+6. Corrected stale template endpoint names for admin event editing,
+   coordinator assignment, event-to-lecture mapping, student registration,
+   teacher event registrations, and notification read actions.
+7. Added student verification-history route and template.
+8. Fixed QR token normalization so it preserves case. Tokens are case-sensitive.
+9. Checked Python syntax for all project Python files.
+10. Checked JavaScript syntax for all three static JS files.
+11. Checked the included SQLite database with PRAGMA integrity_check (ok).
+12. Checked template url_for endpoint references and render_template paths.
+
+Important testing note
+----------------------
+This is a static/code-level audit. The project could not be launched in this
+audit runtime because Flask is not installed here. After extracting this ZIP
+on your computer, install requirements and run the smoke tests in README.md.
+The included SQLite database is preserved. Do not delete it before making
+a backup.

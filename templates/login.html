@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Login | EventSync</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/eventsync.css') }}"
+    >
+</head>
+
+<body class="auth-page">
+
+    <main class="auth-wrapper">
+
+        <section class="auth-card">
+
+            <!-- BRAND -->
+
+            <a href="/" class="auth-brand">
+
+                <span class="brand-mark">
+                    E
+                </span>
+
+                <span>
+                    <strong>EventSync</strong>
+                    <small>College Event Platform</small>
+                </span>
+
+            </a>
+
+
+            <!-- HEADING -->
+
+            <div class="auth-heading">
+
+                <span class="section-label">
+                    WELCOME BACK
+                </span>
+
+                <h1>
+                    Sign in to EventSync
+                </h1>
+
+                <p>
+                    Access your events, attendance and dashboard.
+                </p>
+
+            </div>
+
+
+            <!-- FLASH MESSAGES -->
+
+            {% with messages = get_flashed_messages(
+                with_categories=true
+            ) %}
+
+                {% if messages %}
+
+                    <div class="flash-container">
+
+                        {% for category, message in messages %}
+
+                            <div
+                                class="flash-message flash-{{ category }}"
+                            >
+                                {{ message }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% endif %}
+
+            {% endwith %}
+
+
+            <!-- LOGIN FORM -->
+
+            <form
+                method="POST"
+                action="{{ url_for('auth.login') }}"
+                class="auth-form"
+            >
+
+                <!-- EMAIL -->
+
+                <div class="form-group">
+
+                    <label for="email">
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="Enter your email"
+                        value="{{ request.form.get('email', '') }}"
+                        autocomplete="email"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- PASSWORD -->
+
+                <div class="form-group">
+
+                    <div class="form-label-row">
+
+                        <label for="password">
+                            Password
+                        </label>
+
+                    </div>
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- ROLE -->
+
+                <div class="form-group">
+
+                    <label for="role">
+                        Login As
+                    </label>
+
+                    <select
+                        id="role"
+                        name="role"
+                        required
+                    >
+
+                        <option
+                            value=""
+                            disabled
+                            {% if not request.form.get('role') %}
+                                selected
+                            {% endif %}
+                        >
+                            Select your role
+                        </option>
+
+                        <option
+                            value="student"
+                            {% if request.form.get('role') == 'student' %}
+                                selected
+                            {% endif %}
+                        >
+                            Student
+                        </option>
+
+                        <option
+                            value="teacher"
+                            {% if request.form.get('role') == 'teacher' %}
+                                selected
+                            {% endif %}
+                        >
+                            Teacher
+                        </option>
+
+                        <option
+                            value="admin"
+                            {% if request.form.get('role') == 'admin' %}
+                                selected
+                            {% endif %}
+                        >
+                            Administrator
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- SUBMIT -->
+
+                <button
+                    type="submit"
+                    class="btn btn-primary auth-submit"
+                >
+                    Sign In
+                </button>
+
+            </form>
+
+
+            <!-- DEMO ACCOUNT INFORMATION -->
+
+            <div class="demo-info">
+
+                <div class="demo-info-title">
+                    Demo Access
+                </div>
+
+                <p>
+                    Teacher and administrator demo accounts are
+                    available for the hackathon demonstration.
+                </p>
+
+                <div class="demo-note">
+                    Students can create their own account using
+                    the registration page.
+                </div>
+
+            </div>
+
+
+            <!-- REGISTER -->
+
+            <div class="auth-footer">
+
+                <span>
+                    Don't have a student account?
+                </span>
+
+                <a href="{{ url_for('auth.register') }}">
+                    Create Account
+                </a>
+
+            </div>
+
+
+            <!-- BACK -->
+
+            <a
+                href="/"
+                class="back-home"
+            >
+                ← Back to EventSync
+            </a>
+
+        </section>
+
+    </main>
+
+
+    <script
+        src="{{ url_for('static', filename='js/eventsync.js') }}"
+    ></script>
+
+</body>
+</html>

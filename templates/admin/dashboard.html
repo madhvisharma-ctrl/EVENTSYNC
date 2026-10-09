@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | EventSync</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/eventsync.css') }}">
+
+    <style>
+        .page-wrap {
+            min-height: 100vh;
+            display: flex;
+            background: #f5f7fb;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #111827;
+            color: #fff;
+            padding: 24px 16px;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 28px;
+            padding: 0 12px;
+        }
+
+        .nav-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #9ca3af;
+            margin: 20px 12px 8px;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 11px 12px;
+            border-radius: 9px;
+            color: #d1d5db;
+            text-decoration: none;
+            margin-bottom: 4px;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #1f2937;
+            color: #fff;
+        }
+
+        .main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 18px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #111827;
+        }
+
+        .topbar p {
+            margin: 5px 0 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .admin-badge {
+            background: #ede9fe;
+            color: #6d28d9;
+            padding: 7px 11px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .content {
+            padding: 28px;
+        }
+
+        .alert {
+            padding: 13px 16px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .alert-error,
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .section-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            margin-bottom: 22px;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #111827;
+        }
+
+        .section-body {
+            padding: 20px;
+        }
+
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 15px;
+        }
+
+        .quick-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 17px;
+            text-decoration: none;
+            color: inherit;
+            transition: 0.15s ease;
+        }
+
+        .quick-card:hover {
+            border-color: #9ca3af;
+            transform: translateY(-1px);
+        }
+
+        .quick-card strong {
+            display: block;
+            color: #111827;
+            margin-bottom: 5px;
+        }
+
+        .quick-card span {
+            color: #6b7280;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        th {
+            background: #f9fafb;
+            color: #374151;
+            font-weight: 700;
+        }
+
+        td {
+            color: #4b5563;
+        }
+
+        .badge {
+            display: inline-flex;
+            padding: 5px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .badge-student {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-teacher {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-admin {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .badge-live {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-upcoming {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-draft {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 9px 13px;
+            border-radius: 8px;
+            text-decoration: none;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            color: #374151;
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .btn:hover {
+            background: #f9fafb;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 30px;
+            color: #6b7280;
+        }
+
+        .system-note {
+            padding: 16px;
+            border-radius: 11px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+            line-height: 1.6;
+            font-size: 13px;
+        }
+
+        @media (max-width: 1050px) {
+            .stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .quick-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 720px) {
+            .page-wrap {
+                display: block;
+            }
+
+            .sidebar {
+                width: auto;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .topbar {
+                padding: 16px;
+            }
+
+            .stats,
+            .quick-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page-wrap">
+
+    <aside class="sidebar">
+
+        <div class="brand">EventSync</div>
+
+        <div class="nav-title">Administration</div>
+
+        <a href="{{ url_for('admin.dashboard') }}"
+           class="nav-link active">
+            Dashboard
+        </a>
+
+        <a href="{{ url_for('admin.users') }}"
+           class="nav-link">
+            Users
+        </a>
+
+        <a href="{{ url_for('admin.departments') }}"
+           class="nav-link">
+            Departments
+        </a>
+
+        <a href="{{ url_for('admin.subjects') }}"
+           class="nav-link">
+            Subjects
+        </a>
+
+        <a href="{{ url_for('admin.lectures') }}"
+           class="nav-link">
+            Lectures / Timetable
+        </a>
+
+        <a href="{{ url_for('admin.events') }}"
+           class="nav-link">
+            Events
+        </a>
+
+        <a href="{{ url_for('admin.reports') }}"
+           class="nav-link">
+            Reports
+        </a>
+
+        <div class="nav-title">Account</div>
+
+        <a href="{{ url_for('auth.logout') }}"
+           class="nav-link">
+            Logout
+        </a>
+
+    </aside>
+
+    <main class="main">
+
+        <header class="topbar">
+
+            <div>
+                <h1>Admin Dashboard</h1>
+                <p>
+                    Manage EventSync users, academics, events and
+                    verification records.
+                </p>
+            </div>
+
+            <span class="admin-badge">
+                ADMIN
+            </span>
+
+        </header>
+
+        <section class="content">
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="stats">
+
+                <div class="stat-card">
+                    <div class="stat-label">Total Users</div>
+                    <div class="stat-value">
+                        {{ stats.total_users if stats is defined else 0 }}
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Students</div>
+                    <div class="stat-value">
+                        {{ stats.students if stats is defined else 0 }}
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Teachers</div>
+                    <div class="stat-value">
+                        {{ stats.teachers if stats is defined else 0 }}
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-label">Events</div>
+                    <div class="stat-value">
+                        {{ stats.events if stats is defined else 0 }}
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="section-card">
+
+                <div class="section-header">
+                    <h2>Administration Tools</h2>
+                </div>
+
+                <div class="section-body">
+
+                    <div class="quick-grid">
+
+                        <a href="{{ url_for('admin.users') }}"
+                           class="quick-card">
+
+                            <strong>User Management</strong>
+
+                            <span>
+                                View students, teachers and administrators,
+                                departments, roles and account status.
+                            </span>
+
+                        </a>
+
+                        <a href="{{ url_for('admin.departments') }}"
+                           class="quick-card">
+
+                            <strong>Departments</strong>
+
+                            <span>
+                                Manage academic departments such as CSE,
+                                ECE, ME, CE and others.
+                            </span>
+
+                        </a>
+
+                        <a href="{{ url_for('admin.subjects') }}"
+                           class="quick-card">
+
+                            <strong>Subjects</strong>
+
+                            <span>
+                                Manage subject codes, names, departments,
+                                semesters and credits.
+                            </span>
+
+                        </a>
+
+                        <a href="{{ url_for('admin.lectures') }}"
+                           class="quick-card">
+
+                            <strong>Lectures / Timetable</strong>
+
+                            <span>
+                                Create and manage teacher lecture schedules,
+                                rooms, sections and dates.
+                            </span>
+
+                        </a>
+
+                        <a href="{{ url_for('admin.events') }}"
+                           class="quick-card">
+
+                            <strong>Event Management</strong>
+
+                            <span>
+                                Create events, update status, assign
+                                coordinators and map lectures.
+                            </span>
+
+                        </a>
+
+                        <a href="{{ url_for('admin.reports') }}"
+                           class="quick-card">
+
+                            <strong>Reports & Verification</strong>
+
+                            <span>
+                                Review event registrations, verification
+                                records and attendance-related reports.
+                            </span>
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="section-card">
+
+                <div class="section-header">
+                    <h2>Recent Users</h2>
+
+                    <a href="{{ url_for('admin.users') }}"
+                       class="btn">
+                        View All
+                    </a>
+                </div>
+
+                <div class="section-body">
+
+                    {% if recent_users is defined and recent_users %}
+
+                        <div class="table-wrap">
+
+                            <table>
+
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Department</th>
+                                        <th>Created</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    {% for user in recent_users %}
+
+                                        <tr>
+
+                                            <td>
+                                                <strong>
+                                                    {{ user.name }}
+                                                </strong>
+                                            </td>
+
+                                            <td>
+                                                {{ user.email }}
+                                            </td>
+
+                                            <td>
+
+                                                {% if user.role == 'student' %}
+
+                                                    <span class="badge badge-student">
+                                                        STUDENT
+                                                    </span>
+
+                                                {% elif user.role == 'teacher' %}
+
+                                                    <span class="badge badge-teacher">
+                                                        TEACHER
+                                                    </span>
+
+                                                {% else %}
+
+                                                    <span class="badge badge-admin">
+                                                        {{ user.role|upper }}
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </td>
+
+                                            <td>
+                                                {{ user.department_name or '-' }}
+                                            </td>
+
+                                            <td>
+                                                {{ user.created_at or '-' }}
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="empty">
+                            No recent users available.
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <div class="section-card">
+
+                <div class="section-header">
+                    <h2>Recent Events</h2>
+
+                    <a href="{{ url_for('admin.events') }}"
+                       class="btn">
+                        Manage Events
+                    </a>
+                </div>
+
+                <div class="section-body">
+
+                    {% if recent_events is defined and recent_events %}
+
+                        <div class="table-wrap">
+
+                            <table>
+
+                                <thead>
+                                    <tr>
+                                        <th>Event</th>
+                                        <th>Category</th>
+                                        <th>Date</th>
+                                        <th>Venue</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    {% for event in recent_events %}
+
+                                        <tr>
+
+                                            <td>
+                                                <strong>
+                                                    {{ event.event_name }}
+                                                </strong>
+                                            </td>
+
+                                            <td>
+                                                {{ event.event_category or '-' }}
+                                            </td>
+
+                                            <td>
+                                                {{ event.event_date }}
+                                            </td>
+
+                                            <td>
+                                                {{ event.venue or 'TBA' }}
+                                            </td>
+
+                                            <td>
+
+                                                {% if event.status == 'live' %}
+
+                                                    <span class="badge badge-live">
+                                                        LIVE
+                                                    </span>
+
+                                                {% elif event.status == 'upcoming' %}
+
+                                                    <span class="badge badge-upcoming">
+                                                        UPCOMING
+                                                    </span>
+
+                                                {% elif event.status == 'completed' %}
+
+                                                    <span class="badge badge-completed">
+                                                        COMPLETED
+                                                    </span>
+
+                                                {% else %}
+
+                                                    <span class="badge badge-draft">
+                                                        {{ event.status|upper }}
+                                                    </span>
+
+                                                {% endif %}
+
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="empty">
+                            No events available.
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <div class="system-note">
+
+                <strong>System rule:</strong>
+                Event presence verification and academic lecture attendance
+                remain separate. Admin event verification reports do not
+                automatically mark a student's academic attendance.
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+</body>
+</html>

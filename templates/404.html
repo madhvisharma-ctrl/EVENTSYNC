@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Page Not Found | EventSync</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/eventsync.css') }}"
+    >
+</head>
+
+<body class="auth-page">
+
+    <main class="auth-shell">
+
+        <section class="auth-card error-card">
+
+            <div class="error-code">404</div>
+
+            <p class="eyebrow">EVENTSYNC</p>
+
+            <h1>Page Not Found</h1>
+
+            <p class="auth-subtitle">
+                The page you're looking for doesn't exist or may have been
+                moved.
+            </p>
+
+            <div class="error-actions">
+
+                {% if session.get("user_role") == "student" %}
+                    <a
+                        href="{{ url_for('student.dashboard') }}"
+                        class="btn btn-primary"
+                    >
+                        Go to Student Dashboard
+                    </a>
+
+                {% elif session.get("user_role") == "teacher" %}
+                    <a
+                        href="{{ url_for('teacher.dashboard') }}"
+                        class="btn btn-primary"
+                    >
+                        Go to Teacher Dashboard
+                    </a>
+
+                {% elif session.get("user_role") == "admin" %}
+                    <a
+                        href="{{ url_for('admin.dashboard') }}"
+                        class="btn btn-primary"
+                    >
+                        Go to Admin Dashboard
+                    </a>
+
+                {% else %}
+                    <a
+                        href="{{ url_for('index') }}"
+                        class="btn btn-primary"
+                    >
+                        Go to Home
+                    </a>
+                {% endif %}
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    onclick="history.back()"
+                >
+                    ← Go Back
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="{{ url_for('static', filename='js/eventsync.js') }}"></script>
+
+</body>
+</html>

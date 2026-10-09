@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>My Events | EventSync</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/eventsync.css') }}"
+    >
+</head>
+
+<body>
+
+<div class="app-shell">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-brand">
+            <div class="brand-mark">ES</div>
+
+            <div>
+                <strong>EventSync</strong>
+                <span>Student Portal</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <a
+                href="{{ url_for('student.dashboard') }}"
+                class="nav-link"
+            >
+                <span>⌂</span>
+                <span>Dashboard</span>
+            </a>
+
+            <a
+                href="{{ url_for('student.events') }}"
+                class="nav-link"
+            >
+                <span>◈</span>
+                <span>Browse Events</span>
+            </a>
+
+            <a
+                href="{{ url_for('student.my_events') }}"
+                class="nav-link active"
+            >
+                <span>✓</span>
+                <span>My Events</span>
+            </a>
+
+            <a
+                href="{{ url_for('student.verification_history') }}"
+                class="nav-link"
+            >
+                <span>▣</span>
+                <span>Verification History</span>
+            </a>
+
+            {% if coordinator_event_count|default(0) > 0 %}
+                <a
+                    href="{{ url_for('student.coordinator') }}"
+                    class="nav-link"
+                >
+                    <span>★</span>
+                    <span>Coordinator Workspace</span>
+                </a>
+            {% endif %}
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <a
+                href="{{ url_for('student.profile') }}"
+                class="nav-link"
+            >
+                <span>◎</span>
+                <span>My Profile</span>
+            </a>
+
+            <a
+                href="{{ url_for('auth.logout') }}"
+                class="nav-link logout-link"
+            >
+                <span>↪</span>
+                <span>Logout</span>
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Topbar -->
+        <header class="topbar">
+
+            <button
+                type="button"
+                class="mobile-menu-btn"
+                id="mobileMenuButton"
+                aria-label="Open menu"
+            >
+                ☰
+            </button>
+
+            <div class="topbar-title">
+
+                <p class="eyebrow">STUDENT PORTAL</p>
+
+                <h1>My Events</h1>
+
+            </div>
+
+            <div class="topbar-actions">
+
+                <a
+                    href="{{ url_for('student.notifications') }}"
+                    class="icon-button"
+                    title="Notifications"
+                >
+                    🔔
+
+                    {% if unread_notification_count|default(0) > 0 %}
+                        <span class="notification-dot">
+                            {{ unread_notification_count }}
+                        </span>
+                    {% endif %}
+                </a>
+
+                <div class="user-chip">
+
+                    <div class="avatar">
+                        {{ (user.name if user else "S")[:1]|upper }}
+                    </div>
+
+                    <div class="user-chip-info">
+
+                        <strong>
+                            {{ user.name if user else "Student" }}
+                        </strong>
+
+                        <span>
+                            {{ user.roll_no if user and user.roll_no else "Student" }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                <div class="flash-stack page-flashes">
+
+                    {% for category, message in messages %}
+
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+        {% endwith %}
+
+
+        <!-- Intro -->
+        <section class="page-intro">
+
+            <div>
+
+                <p class="eyebrow">YOUR ACTIVITY</p>
+
+                <h2>Events You're Part Of</h2>
+
+                <p>
+                    Track your event registrations, participation roles
+                    and verified presence.
+                </p>
+
+            </div>
+
+            <a
+                href="{{ url_for('student.events') }}"
+                class="btn btn-primary"
+            >
+                + Browse Events
+            </a>
+
+        </section>
+
+
+        <!-- Summary -->
+        <section class="stats-grid">
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    ◈
+                </div>
+
+                <div>
+                    <span class="stat-label">
+                        Total Registrations
+                    </span>
+
+                    <strong class="stat-value">
+                        {{ registrations|length if registrations else 0 }}
+                    </strong>
+
+                    <small>
+                        Events joined
+                    </small>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    ✓
+                </div>
+
+                <div>
+                    <span class="stat-label">
+                        Verified
+                    </span>
+
+                    <strong class="stat-value">
+                        {{ verified_count|default(0) }}
+                    </strong>
+
+                    <small>
+                        Presence verified
+                    </small>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    ★
+                </div>
+
+                <div>
+                    <span class="stat-label">
+                        Coordinator
+                    </span>
+
+                    <strong class="stat-value">
+                        {{ coordinator_count|default(0) }}
+                    </strong>
+
+                    <small>
+                        Events coordinated
+                    </small>
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-icon">
+                    !
+                </div>
+
+                <div>
+                    <span class="stat-label">
+                        Pending
+                    </span>
+
+                    <strong class="stat-value">
+                        {{ pending_count|default(0) }}
+                    </strong>
+
+                    <small>
+                        Awaiting verification
+                    </small>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Event List -->
+        <section class="dashboard-card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <p class="eyebrow">REGISTRATIONS</p>
+
+                    <h3>My Registered Events</h3>
+
+                </div>
+
+                <span class="muted-text">
+                    {{ registrations|length if registrations else 0 }}
+                    total
+                </span>
+
+            </div>
+
+
+            {% if registrations %}
+
+                <div class="event-list">
+
+                    {% for registration in registrations %}
+
+                        <article class="event-list-item">
+
+                            <div class="event-date-box">
+
+                                <strong>
+                                    {{
+                                        registration.event_date.strftime('%d')
+                                        if registration.event_date
+                                        and registration.event_date.strftime
+                                        else registration.event_date|string|truncate(2, True, '')
+                                    }}
+                                </strong>
+
+                                <span>
+                                    {{
+                                        registration.event_date.strftime('%b')
+                                        if registration.event_date
+                                        and registration.event_date.strftime
+                                        else ''
+                                    }}
+                                </span>
+
+                            </div>
+
+
+                            <div class="event-list-content">
+
+                                <div class="event-list-top">
+
+                                    <span class="status-badge">
+                                        {{
+                                            registration.event_category
+                                            |default("Event")
+                                        }}
+                                    </span>
+
+                                    {% if registration.status == "attended" %}
+
+                                        <span class="status-badge status-verified">
+                                            ✓ Verified
+                                        </span>
+
+                                    {% elif registration.status == "cancelled" %}
+
+                                        <span class="status-badge status-cancelled">
+                                            Cancelled
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="status-badge">
+                                            Registered
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                                <h4>
+                                    {{ registration.event_name }}
+                                </h4>
+
+
+                                <p>
+                                    📍
+                                    {{ registration.venue|default("Venue TBA") }}
+                                </p>
+
+
+                                <small>
+                                    🕐
+                                    {{ registration.start_time|default("--") }}
+                                    -
+                                    {{ registration.end_time|default("--") }}
+                                </small>
+
+
+                                {% if registration.participation_role %}
+
+                                    <div class="registration-role-inline">
+
+                                        <span>
+                                            Role:
+                                        </span>
+
+                                        <strong>
+                                            {{
+                                                registration.participation_role
+                                                |replace('_', ' ')
+                                                |title
+                                            }}
+                                        </strong>
+
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <div class="event-list-actions">
+
+                                <a
+                                    href="{{ url_for(
+                                        'event.event_details',
+                                        event_id=registration.event_id
+                                    ) }}"
+                                    class="btn btn-secondary btn-small"
+                                >
+                                    Details
+                                </a>
+
+
+                                {% if registration.status == "registered"
+                                   and registration.event_status == "live" %}
+
+                                    <a
+                                        href="{{ url_for(
+                                            'verification.verify_event',
+                                            event_id=registration.event_id
+                                        ) }}"
+                                        class="btn btn-primary btn-small"
+                                    >
+                                        Verify
+                                    </a>
+
+                                {% elif registration.status == "attended" %}
+
+                                    <a
+                                        href="{{ url_for(
+                                            'verification.verification_result',
+                                            event_id=registration.event_id
+                                        ) }}"
+                                        class="btn btn-primary btn-small"
+                                    >
+                                        View Result
+                                    </a>
+
+                                {% endif %}
+
+                            </div>
+
+                        </article>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="empty-state">
+
+                    <div class="empty-state-icon">
+                        ◈
+                    </div>
+
+                    <h3>No Registered Events</h3>
+
+                    <p>
+                        You haven't registered for any events yet.
+                    </p>
+
+                    <a
+                        href="{{ url_for('student.events') }}"
+                        class="btn btn-primary"
+                    >
+                        Browse Events
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- Verification Reminder -->
+        <section class="verification-banner">
+
+            <div class="verification-banner-icon">
+                ✓
+            </div>
+
+            <div class="verification-banner-content">
+
+                <p class="eyebrow">
+                    REMEMBER
+                </p>
+
+                <h3>
+                    Registration is not the same as attendance
+                </h3>
+
+                <p>
+                    Your event presence is verified only after the
+                    short-lived QR code and live face verification
+                    successfully pass.
+                </p>
+
+            </div>
+
+            <a
+                href="{{ url_for('student.verification_history') }}"
+                class="btn btn-secondary"
+            >
+                Verification History
+            </a>
+
+        </section>
+
+
+        <!-- Coordinator Section -->
+        {% if coordinator_events %}
+
+            <section class="dashboard-card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            EVENT TEAM
+                        </p>
+
+                        <h3>
+                            Events You Coordinate
+                        </h3>
+
+                    </div>
+
+                    <a
+                        href="{{ url_for('student.coordinator') }}"
+                        class="text-link"
+                    >
+                        Open Workspace →
+                    </a>
+
+                </div>
+
+
+                <div class="compact-list">
+
+                    {% for event in coordinator_events[:5] %}
+
+                        <div class="compact-list-item">
+
+                            <div class="compact-icon">
+                                ★
+                            </div>
+
+                            <div class="compact-content">
+
+                                <strong>
+                                    {{ event.event_name }}
+                                </strong>
+
+                                <span>
+                                    {{ event.event_date }}
+                                    ·
+                                    {{ event.venue|default("Venue TBA") }}
+                                </span>
+
+                            </div>
+
+                            <span class="status-badge">
+                                Coordinator
+                            </span>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            </section>
+
+        {% endif %}
+
+    </main>
+
+</div>
+
+
+<script src="{{ url_for('static', filename='js/eventsync.js') }}"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const menuButton =
+            document.getElementById("mobileMenuButton");
+
+        const sidebar =
+            document.getElementById("sidebar");
+
+        if (menuButton && sidebar) {
+
+            menuButton.addEventListener(
+                "click",
+                function () {
+                    sidebar.classList.toggle("sidebar-open");
+                }
+            );
+
+        }
+
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verification History | EventSync</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/eventsync.css') }}">
+</head>
+<body>
+  <main class="page-shell">
+    <div class="page-header">
+      <h1>Event Verification History</h1>
+      <a href="{{ url_for('student.dashboard') }}">Back to dashboard</a>
+    </div>
+    {% if verifications %}
+      <div class="table-responsive">
+        <table>
+          <thead><tr><th>Event</th><th>Date</th><th>QR</th><th>Face</th><th>Status</th><th>Verified at</th></tr></thead>
+          <tbody>
+          {% for item in verifications %}
+            <tr>
+              <td>{{ item.event_name }}</td>
+              <td>{{ item.event_date or '-' }}</td>
+              <td>{{ 'Verified' if item.qr_verified else 'Not verified' }}</td>
+              <td>{{ 'Verified' if item.face_verified else 'Not verified' }}</td>
+              <td>{{ item.verification_status or '-' }}</td>
+              <td>{{ item.verified_at or '-' }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p>No event verification records found yet.</p>
+    {% endif %}
+  </main>
+</body>
+</html>

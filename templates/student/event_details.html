@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ event.event_name }} | EventSync</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/eventsync.css') }}"
+    >
+</head>
+
+<body>
+
+<div class="app-shell">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-brand">
+            <div class="brand-mark">ES</div>
+
+            <div>
+                <strong>EventSync</strong>
+                <span>Student Portal</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <a
+                href="{{ url_for('student.dashboard') }}"
+                class="nav-link"
+            >
+                <span>⌂</span>
+                <span>Dashboard</span>
+            </a>
+
+            <a
+                href="{{ url_for('student.events') }}"
+                class="nav-link active"
+            >
+                <span>◈</span>
+                <span>Browse Events</span>
+            </a>
+
+            <a
+                href="{{ url_for('student.my_events') }}"
+                class="nav-link"
+            >
+                <span>✓</span>
+                <span>My Events</span>
+            </a>
+
+            <a
+                href="{{ url_for('student.verification_history') }}"
+                class="nav-link"
+            >
+                <span>▣</span>
+                <span>Verification History</span>
+            </a>
+
+            {% if coordinator_event_count|default(0) > 0 %}
+                <a
+                    href="{{ url_for('student.coordinator') }}"
+                    class="nav-link"
+                >
+                    <span>★</span>
+                    <span>Coordinator Workspace</span>
+                </a>
+            {% endif %}
+
+        </nav>
+
+        <div class="sidebar-bottom">
+
+            <a
+                href="{{ url_for('student.profile') }}"
+                class="nav-link"
+            >
+                <span>◎</span>
+                <span>My Profile</span>
+            </a>
+
+            <a
+                href="{{ url_for('auth.logout') }}"
+                class="nav-link logout-link"
+            >
+                <span>↪</span>
+                <span>Logout</span>
+            </a>
+
+        </div>
+
+    </aside>
+
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Topbar -->
+        <header class="topbar">
+
+            <button
+                type="button"
+                class="mobile-menu-btn"
+                id="mobileMenuButton"
+                aria-label="Open menu"
+            >
+                ☰
+            </button>
+
+            <div class="topbar-title">
+
+                <p class="eyebrow">EVENT DETAILS</p>
+
+                <h1>{{ event.event_name }}</h1>
+
+            </div>
+
+            <div class="topbar-actions">
+
+                <a
+                    href="{{ url_for('student.notifications') }}"
+                    class="icon-button"
+                    title="Notifications"
+                >
+                    🔔
+
+                    {% if unread_notification_count|default(0) > 0 %}
+                        <span class="notification-dot">
+                            {{ unread_notification_count }}
+                        </span>
+                    {% endif %}
+
+                </a>
+
+                <div class="user-chip">
+
+                    <div class="avatar">
+                        {{ (user.name if user else "S")[:1]|upper }}
+                    </div>
+
+                    <div class="user-chip-info">
+
+                        <strong>
+                            {{ user.name if user else "Student" }}
+                        </strong>
+
+                        <span>
+                            {{ user.roll_no if user and user.roll_no else "Student" }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+
+            {% if messages %}
+
+                <div class="flash-stack page-flashes">
+
+                    {% for category, message in messages %}
+
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% endif %}
+
+        {% endwith %}
+
+
+        <!-- Back -->
+        <div class="page-back">
+
+            <a
+                href="{{ url_for('student.events') }}"
+                class="text-link"
+            >
+                ← Back to Events
+            </a>
+
+        </div>
+
+
+        <!-- Event Hero -->
+        <section class="event-detail-hero">
+
+            <div class="event-detail-heading">
+
+                <div class="event-card-top">
+
+                    <span class="status-badge">
+                        {{ event.event_category|default("Event") }}
+                    </span>
+
+                    {% if event.status %}
+
+                        <span
+                            class="status-badge status-{{ event.status }}"
+                        >
+                            {{ event.status|replace('_', ' ')|title }}
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+
+                <h2>
+                    {{ event.event_name }}
+                </h2>
+
+
+                {% if event.event_type %}
+
+                    <p class="event-type-label">
+                        {{ event.event_type }}
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="event-detail-actions">
+
+                {% if registration %}
+
+                    {% if registration.status == "cancelled" %}
+
+                        <span class="status-badge status-cancelled">
+                            Registration Cancelled
+                        </span>
+
+                    {% elif registration.status == "attended" %}
+
+                        <span class="status-badge status-verified">
+                            ✓ Presence Verified
+                        </span>
+
+                    {% else %}
+
+                        <a
+                            href="{{ url_for(
+                                'verification.verify_event',
+                                event_id=event.id
+                            ) }}"
+                            class="btn btn-primary"
+                        >
+                            Verify Event Presence
+                        </a>
+
+                        <form
+                            method="POST"
+                            action="{{ url_for(
+                                'event.cancel_registration',
+                                event_id=event.id
+                            ) }}"
+                            onsubmit="return confirm(
+                                'Cancel your event registration?'
+                            );"
+                        >
+                            <button
+                                type="submit"
+                                class="btn btn-secondary"
+                            >
+                                Cancel Registration
+                            </button>
+                        </form>
+
+                    {% endif %}
+
+                {% else %}
+
+                    {% if event.status != "cancelled"
+                       and event.status != "completed" %}
+
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            data-open-register-modal
+                        >
+                            Register for Event
+                        </button>
+
+                    {% endif %}
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- Event Information -->
+        <section class="detail-grid">
+
+            <!-- Main Information -->
+            <div class="dashboard-card">
+
+                <div class="card-header">
+
+                    <div>
+                        <p class="eyebrow">ABOUT THE EVENT</p>
+                        <h3>Event Information</h3>
+                    </div>
+
+                </div>
+
+
+                <div class="event-description">
+
+                    {% if event.description %}
+
+                        <p>
+                            {{ event.description }}
+                        </p>
+
+                    {% else %}
+
+                        <p class="muted-text">
+                            No additional description has been provided
+                            for this event.
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+
+                <div class="event-information-grid">
+
+                    <div class="information-item">
+
+                        <span class="information-label">
+                            Date
+                        </span>
+
+                        <strong>
+                            📅 {{ event.event_date }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="information-item">
+
+                        <span class="information-label">
+                            Time
+                        </span>
+
+                        <strong>
+                            🕐
+                            {{ event.start_time }}
+                            -
+                            {{ event.end_time }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="information-item">
+
+                        <span class="information-label">
+                            Venue
+                        </span>
+
+                        <strong>
+                            📍 {{ event.venue|default("Venue TBA") }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="information-item">
+
+                        <span class="information-label">
+                            Category
+                        </span>
+
+                        <strong>
+                            {{ event.event_category|default("Other") }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="information-item">
+
+                        <span class="information-label">
+                            Event Type
+                        </span>
+
+                        <strong>
+                            {{ event.event_type|default("General Event") }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="information-item">
+
+                        <span class="information-label">
+                            Status
+                        </span>
+
+                        <strong>
+                            {{ event.status|replace('_', ' ')|title }}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Registration Status -->
+            <div class="dashboard-card">
+
+                <div class="card-header">
+
+                    <div>
+                        <p class="eyebrow">YOUR STATUS</p>
+                        <h3>Registration</h3>
+                    </div>
+
+                </div>
+
+
+                {% if registration %}
+
+                    <div class="registration-status-box">
+
+                        {% if registration.status == "attended" %}
+
+                            <div class="large-status-icon">
+                                ✓
+                            </div>
+
+                            <h4>Presence Verified</h4>
+
+                            <p>
+                                Your presence at this event has been
+                                successfully verified.
+                            </p>
+
+                            <span class="status-badge status-verified">
+                                Verified
+                            </span>
+
+                        {% elif registration.status == "cancelled" %}
+
+                            <div class="large-status-icon">
+                                !
+                            </div>
+
+                            <h4>Registration Cancelled</h4>
+
+                            <p>
+                                You are no longer registered for this event.
+                            </p>
+
+                            {% if event.status != "completed"
+                               and event.status != "cancelled" %}
+
+                                <button
+                                    type="button"
+                                    class="btn btn-primary btn-small"
+                                    data-open-register-modal
+                                >
+                                    Register Again
+                                </button>
+
+                            {% endif %}
+
+                        {% else %}
+
+                            <div class="large-status-icon">
+                                ✓
+                            </div>
+
+                            <h4>You're Registered</h4>
+
+                            <p>
+                                You are registered for this event.
+                                Verify your presence when the event is live.
+                            </p>
+
+                            {% if registration.participation_role %}
+
+                                <div class="registration-role">
+
+                                    <span>
+                                        Participation Role
+                                    </span>
+
+                                    <strong>
+                                        {{ registration.participation_role
+                                            |replace('_', ' ')
+                                            |title }}
+                                    </strong>
+
+                                </div>
+
+                            {% endif %}
+
+                            {% if event.status == "live" %}
+
+                                <a
+                                    href="{{ url_for(
+                                        'verification.verify_event',
+                                        event_id=event.id
+                                    ) }}"
+                                    class="btn btn-primary btn-full"
+                                >
+                                    Verify Presence Now
+                                </a>
+
+                            {% endif %}
+
+                        {% endif %}
+
+                    </div>
+
+                {% else %}
+
+                    <div class="registration-status-box">
+
+                        <div class="large-status-icon">
+                            ◈
+                        </div>
+
+                        <h4>Not Registered</h4>
+
+                        <p>
+                            Register for this event to participate and
+                            become eligible for event presence verification.
+                        </p>
+
+                        {% if event.status != "completed"
+                           and event.status != "cancelled" %}
+
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-full"
+                                data-open-register-modal
+                            >
+                                Register Now
+                            </button>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <!-- Coordinators -->
+        <section class="dashboard-card">
+
+            <div class="card-header">
+
+                <div>
+                    <p class="eyebrow">EVENT TEAM</p>
+                    <h3>Event Coordinators</h3>
+                </div>
+
+            </div>
+
+
+            {% if coordinators %}
+
+                <div class="coordinator-list">
+
+                    {% for coordinator in coordinators %}
+
+                        <div class="coordinator-item">
+
+                            <div class="avatar">
+                                {{ (coordinator.name or "U")[:1]|upper }}
+                            </div>
+
+                            <div class="coordinator-info">
+
+                                <strong>
+                                    {{ coordinator.name }}
+                                </strong>
+
+                                <span>
+                                    {{ coordinator.coordinator_role
+                                        |replace('_', ' ')
+                                        |title }}
+                                </span>
+
+                            </div>
+
+                            <span class="status-badge">
+                                Event Coordinator
+                            </span>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="empty-state compact-empty">
+
+                    <div class="empty-state-icon">
+                        ★
+                    </div>
+
+                    <h4>Coordinator information unavailable</h4>
+
+                    <p>
+                        Coordinator details have not been added yet.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- Verification Instructions -->
+        <section class="verification-info-section">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <p class="eyebrow">VERIFICATION</p>
+
+                    <h3>How to verify your event presence</h3>
+
+                </div>
+
+            </div>
+
+
+            <div class="workflow-grid">
+
+                <div class="workflow-card">
+
+                    <span class="workflow-number">01</span>
+
+                    <div class="workflow-icon">
+                        ✓
+                    </div>
+
+                    <h4>Register</h4>
+
+                    <p>
+                        Register for this event before attempting verification.
+                    </p>
+
+                </div>
+
+
+                <div class="workflow-card">
+
+                    <span class="workflow-number">02</span>
+
+                    <div class="workflow-icon">
+                        ▣
+                    </div>
+
+                    <h4>Get Event QR</h4>
+
+                    <p>
+                        Ask the event coordinator to display the current
+                        dynamic QR code.
+                    </p>
+
+                </div>
+
+
+                <div class="workflow-card">
+
+                    <span class="workflow-number">03</span>
+
+                    <div class="workflow-icon">
+                        ◎
+                    </div>
+
+                    <h4>Complete Face Check</h4>
+
+                    <p>
+                        Allow camera access and complete the live face
+                        verification.
+                    </p>
+
+                </div>
+
+
+                <div class="workflow-card">
+
+                    <span class="workflow-number">04</span>
+
+                    <div class="workflow-icon">
+                        ★
+                    </div>
+
+                    <h4>Get Verified</h4>
+
+                    <p>
+                        Once QR, face and event time checks pass, your
+                        presence is verified.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<!-- Registration Modal -->
+<div
+    class="modal-overlay"
+    id="registrationModal"
+    hidden
+>
+
+    <div
+        class="modal-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="registrationModalTitle"
+    >
+
+        <button
+            type="button"
+            class="modal-close"
+            data-close-register-modal
+            aria-label="Close"
+        >
+            ×
+        </button>
+
+
+        <div class="modal-header">
+
+            <p class="eyebrow">EVENT REGISTRATION</p>
+
+            <h2 id="registrationModalTitle">
+                Join {{ event.event_name }}
+            </h2>
+
+            <p>
+                Select how you are participating in this event.
+            </p>
+
+        </div>
+
+
+        <form
+            method="POST"
+            action="{{ url_for(
+                'student.register_event',
+                event_id=event.id
+            ) }}"
+        >
+
+            <div class="role-selection">
+
+                <label class="role-option">
+
+                    <input
+                        type="radio"
+                        name="participation_role"
+                        value="participant"
+                        checked
+                    >
+
+                    <span class="role-option-content">
+
+                        <strong>
+                            Participant
+                        </strong>
+
+                        <small>
+                            I am participating in this event.
+                        </small>
+
+                    </span>
+
+                </label>
+
+
+                <label class="role-option">
+
+                    <input
+                        type="radio"
+                        name="participation_role"
+                        value="student_coordinator"
+                    >
+
+                    <span class="role-option-content">
+
+                        <strong>
+                            Student Coordinator
+                        </strong>
+
+                        <small>
+                            I am helping coordinate this event.
+                        </small>
+
+                    </span>
+
+                </label>
+
+            </div>
+
+
+            <div class="registration-note">
+
+                <div class="info-icon">
+                    i
+                </div>
+
+                <p>
+                    Your selected role applies only to this event.
+                    You remain a normal student account in EventSync.
+                </p>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn btn-primary btn-full"
+            >
+                Confirm Registration
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script src="{{ url_for('static', filename='js/eventsync.js') }}"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const menuButton =
+            document.getElementById("mobileMenuButton");
+
+        const sidebar =
+            document.getElementById("sidebar");
+
+        if (menuButton && sidebar) {
+
+            menuButton.addEventListener(
+                "click",
+                function () {
+                    sidebar.classList.toggle("sidebar-open");
+                }
+            );
+
+        }
+
+
+        const modal =
+            document.getElementById("registrationModal");
+
+        const openButtons =
+            document.querySelectorAll(
+                "[data-open-register-modal]"
+            );
+
+        const closeButtons =
+            document.querySelectorAll(
+                "[data-close-register-modal]"
+            );
+
+
+        function openModal() {
+
+            if (!modal) {
+                return;
+            }
+
+            modal.hidden = false;
+
+            document.body.classList.add("modal-open");
+
+        }
+
+
+        function closeModal() {
+
+            if (!modal) {
+                return;
+            }
+
+            modal.hidden = true;
+
+            document.body.classList.remove("modal-open");
+
+        }
+
+
+        openButtons.forEach(function (button) {
+
+            button.addEventListener(
+                "click",
+                openModal
+            );
+
+        });
+
+
+        closeButtons.forEach(function (button) {
+
+            button.addEventListener(
+                "click",
+                closeModal
+            );
+
+        });
+
+
+        if (modal) {
+
+            modal.addEventListener(
+                "click",
+                function (event) {
+
+                    if (event.target === modal) {
+                        closeModal();
+                    }
+
+                }
+            );
+
+        }
+
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (event.key === "Escape") {
+                    closeModal();
+                }
+
+            }
+        );
+
+    });
+</script>
+
+</body>
+</html>
